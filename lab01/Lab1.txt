@@ -1,0 +1,298 @@
+Exercise 1
+
+Q1.
+Server: 129.94.208.3
+
+Several IP addresses could be used
+for load balancing/load distribution so that no single server
+bears too much demand (workload is spread evenly).
+
+Q2.
+Localhost (127.0.0.1) - your own computer and cannot be used to
+communicate with other computers
+
+
+Exercise 2
+
+yes    www.unsw.edu.au
+no    www.getfittest.com.au
+yes    www.mit.edu
+yes    www.intel.com.au
+yes    www.tpg.com.au
+no    www.hola.hp
+yes    www.amazon.com
+yes    www.tsinghua.edu.cn
+no    www.kremlin.ru
+yes    8.8.8.8
+
+For getfittest and hola, these websites do not exist
+so their addresses are not accessable from using both
+the ping command and a Web browser. For kremlin.ru,
+the ping command cannot reach it but a web browser can
+because of security issues (the website is deemed unsafe
+by the browser).
+
+Exercise 3
+
+Q1.
+traceroute to www.columbia.edu (128.59.105.24), 30 hops max, 60 byte packets
+ 1  cserouter1-trusted.cse.unsw.EDU.AU (129.94.208.251)  0.305 ms  0.255 ms  0.222 ms
+ 2  129.94.39.17 (129.94.39.17)  0.988 ms  1.006 ms  0.907 ms
+ 3  172.17.31.154 (172.17.31.154)  1.872 ms  1.895 ms  2.175 ms
+ 4  po-3-1902.ombcr1.gw.unsw.edu.au (129.94.24.20)  1.498 ms  1.401 ms  1.483 ms
+ 5  unswbr1-te-2-13.gw.unsw.edu.au (149.171.255.105)  1.388 ms  1.302 ms  1.441 ms
+ 6  138.44.5.0 (138.44.5.0)  1.472 ms  1.427 ms  1.361 ms
+ 7  et-1-1-0.pe1.mcqp.nsw.aarnet.net.au (113.197.15.4)  1.907 ms  3.549 ms  3.547 ms
+ 8  et-0_0_2.bdr1.guam.gum.aarnet.net.au (113.197.14.137)  71.947 ms  71.948 ms  71.919 ms
+ 9  138.44.228.5 (138.44.228.5)  186.376 ms  186.386 ms  186.344 ms
+10  fourhundredge-0-0-0-2.4079.core2.salt.net.internet2.edu (163.253.1.115)  237.449 ms  237.369 ms  237.372 ms
+11  fourhundredge-0-0-0-21.4079.core1.salt.net.internet2.edu (163.253.1.28)  237.335 ms fourhundredge-0-0-0-0.4079.core2.denv.net.internet2.edu (163.253.1.168)  237.157 ms fourhundredge-0-0-0-22.4079.core1.salt.net.internet2.edu (163.253.1.30)  237.483 ms
+12  fourhundredge-0-0-0-0.4079.core2.kans.net.internet2.edu (163.253.1.251)  236.507 ms fourhundredge-0-0-0-0.4079.core1.denv.net.internet2.edu (163.253.1.170)  236.987 ms fourhundredge-0-0-0-0.4079.core2.kans.net.internet2.edu (163.253.1.251)  236.404 ms
+13  fourhundredge-0-0-0-0.4079.core1.kans.net.internet2.edu (163.253.1.243)  237.734 ms  238.215 ms  238.174 ms
+14  fourhundredge-0-0-0-3.4079.core2.chic.net.internet2.edu (163.253.1.244)  236.473 ms  237.927 ms  237.865 ms
+15  fourhundredge-0-0-0-3.4079.core2.eqch.net.internet2.edu (163.253.2.19)  237.794 ms  237.427 ms  237.383 ms
+16  fourhundredge-0-0-0-0.4079.core2.clev.net.internet2.edu (163.253.2.16)  237.357 ms  237.316 ms  235.981 ms
+17  buf-9208-I2-CLEV.nysernet.net (199.109.11.33)  238.616 ms  238.707 ms  238.664 ms
+18  syr-55a1-buf-9208.nysernet.net (199.109.7.213)  242.322 ms  242.227 ms  242.237 ms
+19  nyc32-55a1-syr-55a1.nysernet.net (199.109.7.206)  247.425 ms  247.411 ms  247.372 ms
+20  nyc32-9208-nyc32-55a1.nysernet.net (199.109.7.201)  254.195 ms  247.096 ms  254.153 ms
+21  columbia.nyc-9208.nysernet.net (199.109.4.14)  247.521 ms  247.863 ms  247.848 ms
+22  cc-core-1-x-nyser32-gw-1.net.columbia.edu (128.59.255.5)  247.843 ms  247.961 ms  247.837 ms
+23  cc-conc-1-x-cc-core-1.net.columbia.edu (128.59.255.21)  247.822 ms  247.512 ms  247.455 ms
+24  www.neurotheory.columbia.edu (128.59.105.24)  247.374 ms  247.305 ms  247.139 ms
+
+There are 23 routers between my workstation and www.columbia.edu
+
+5 are part of the UNSW network
+
+Packets cross the Pacific Ocean between routers 16 and 17
+as 16 is in Brisbane and 17 is in New York.
+
+Q2.
+
+traceroute to www.ucla.edu (108.138.94.16), 30 hops max, 60 byte packets
+ 1  cserouter1-server.cse.unsw.EDU.AU (129.94.242.251)  0.142 ms  0.114 ms  0.094 ms
+ 2  129.94.39.17 (129.94.39.17)  0.878 ms  0.883 ms  0.873 ms
+ 3  172.17.31.154 (172.17.31.154)  1.647 ms  1.636 ms  1.587 ms
+ 4  po-3-1902.ombcr1.gw.unsw.edu.au (129.94.24.20)  1.252 ms  1.264 ms  1.240 ms
+ 5  unswbr1-te-2-13.gw.unsw.edu.au (149.171.255.105)  1.302 ms  1.276 ms  1.238 ms
+ 6  138.44.5.0 (138.44.5.0)  2.539 ms  1.482 ms  1.462 ms
+ 7  et-0-3-0.pe1.bkvl.nsw.aarnet.net.au (113.197.15.147)  1.763 ms  1.639 ms  1.748 ms
+ 8  xe-0-2-5.bdr1.b.sea.aarnet.net.au (202.158.194.121)  143.724 ms  143.666 ms  143.685 ms
+ 9  xe-4-1-1.mpr1.sea1.us.above.net (64.125.193.129)  143.887 ms  143.897 ms  143.799 ms
+10  * * *
+11  ae27.mpr2.sea1.us.zip.zayo.com (64.125.29.3)  149.081 ms  148.521 ms  148.549 ms
+12  99.82.182.102 (99.82.182.102)  143.897 ms  143.907 ms  143.865 ms
+13  * * *
+14  * * *
+15  * * *
+16  * * *
+17  150.222.214.200 (150.222.214.200)  143.937 ms 150.222.214.201 (150.222.214.201)  143.934 ms  144.010 ms
+18  * * *
+19  * * *
+20  * * *
+21  * * *
+22  * * *
+23  * * *
+24  * * *
+25  * * *
+26  * * *
+27  * * *
+28  * * *
+29  * * *
+30  * * *
+
+traceroute to www.u-tokyo.ac.jp (210.152.243.234), 30 hops max, 60 byte packets
+ 1  cserouter1-server.cse.unsw.EDU.AU (129.94.242.251)  0.070 ms  0.068 ms  0.041 ms
+ 2  129.94.39.17 (129.94.39.17)  0.899 ms  0.858 ms  1.019 ms
+ 3  172.17.31.154 (172.17.31.154)  2.102 ms  1.563 ms  2.104 ms
+ 4  po-3-1902.ombcr1.gw.unsw.edu.au (129.94.24.20)  1.142 ms  1.195 ms  1.204 ms
+ 5  unswbr1-te-2-13.gw.unsw.edu.au (149.171.255.105)  1.221 ms  1.174 ms  1.197 ms
+ 6  138.44.5.0 (138.44.5.0)  1.290 ms  1.398 ms  1.397 ms
+ 7  et-0-3-0.pe1.bkvl.nsw.aarnet.net.au (113.197.15.147)  3.884 ms  3.435 ms  3.424 ms
+ 8  ge-4_0_0.bb1.a.pao.aarnet.net.au (202.158.194.177)  155.918 ms  156.005 ms  155.963 ms
+ 9  paloalto0.iij.net (198.32.176.24)  157.358 ms  157.289 ms  157.403 ms
+10  osk011bb00.IIJ.Net (58.138.84.225)  275.534 ms osk004bb01.IIJ.Net (58.138.88.189)  267.449 ms  267.401 ms
+11  osk004ip57.IIJ.Net (58.138.81.74)  275.520 ms osk004ip57.IIJ.Net (58.138.106.166)  267.490 ms osk004ip57.IIJ.Net (58.138.81.78)  271.711 ms
+12  210.130.135.130 (210.130.135.130)  272.741 ms  272.894 ms  275.732 ms
+13  124.83.228.58 (124.83.228.58)  275.311 ms  271.690 ms  267.717 ms
+14  124.83.252.178 (124.83.252.178)  279.763 ms  279.180 ms  281.782 ms
+15  158.205.134.26 (158.205.134.26)  277.673 ms  277.740 ms  281.592 ms
+16  * * *
+17  * * *
+18  * * *
+19  * * *
+20  * * *
+21  * * *
+22  * * *
+23  * * *
+24  * * *
+25  * * *
+26  * * *
+27  * * *
+28  * * *
+29  * * *
+30  * * *
+
+traceroute to www.lancaster.ac.uk (148.88.65.80), 30 hops max, 60 byte packets
+ 1  cserouter1-server.cse.unsw.EDU.AU (129.94.242.251)  0.129 ms  0.123 ms  0.109 ms
+ 2  129.94.39.17 (129.94.39.17)  0.942 ms  0.939 ms  0.945 ms
+ 3  172.17.31.154 (172.17.31.154)  1.607 ms  1.974 ms  1.549 ms
+ 4  po-3-1902.ombcr1.gw.unsw.edu.au (129.94.24.20)  1.341 ms  1.348 ms  1.357 ms
+ 5  unswbr1-te-2-13.gw.unsw.edu.au (149.171.255.105)  1.358 ms  1.391 ms  1.348 ms
+ 6  138.44.5.0 (138.44.5.0)  1.567 ms  1.300 ms  1.312 ms
+ 7  et-2-0-5.bdr1.sing.sin.aarnet.net.au (113.197.15.233)  98.242 ms  97.987 ms  97.960 ms
+ 8  138.44.226.7 (138.44.226.7)  256.484 ms  256.524 ms  256.478 ms
+ 9  janet-gw.mx1.lon.uk.geant.net (62.40.124.198)  256.410 ms  256.366 ms  256.402 ms
+10  ae29.londpg-sbr2.ja.net (146.97.33.2)  256.883 ms  256.788 ms  256.873 ms
+11  ae31.erdiss-sbr2.ja.net (146.97.33.22)  260.703 ms  260.738 ms  260.662 ms
+12  ae29.manckh-sbr2.ja.net (146.97.33.42)  262.470 ms  262.717 ms  262.663 ms
+13  ae25.manckh-ban1.ja.net (146.97.35.50)  262.698 ms  262.563 ms  262.494 ms
+14  lancaster-uni.ja.net (146.97.40.178)  276.490 ms  276.500 ms  276.432 ms
+15  * * *
+16  * * *
+17  * * *
+18  * * *
+19  * * *
+20  * * *
+21  * * *
+22  * * *
+23  * * *
+24  * * *
+25  * * *
+26  * * *
+27  * * *
+28  * * *
+29  * * *
+30  * * *
+
+The paths of the machines diverge at router 8 because it has the role of the
+AARNET network operations centre
+
+From the traceroute results, the number of hops on each path is not
+proportional to the physical distance because Japan's distance is about
+6848km but it has one more hop than London which is 16918km away from
+Australia.
+
+Q3.
+
+traceroute to www.speedtest.com.sg (202.150.221.170), 30 hops max, 60 byte packets
+ 1  cserouter1-server.cse.unsw.EDU.AU (129.94.242.251)  0.087 ms  0.087 ms  0.080 ms
+ 2  129.94.39.17 (129.94.39.17)  0.956 ms  0.996 ms  0.959 ms
+ 3  172.17.31.154 (172.17.31.154)  1.776 ms  1.743 ms  1.782 ms
+ 4  po-3-1902.ombcr1.gw.unsw.edu.au (129.94.24.20)  1.369 ms  1.336 ms  1.374 ms
+ 5  unswbr1-te-2-13.gw.unsw.edu.au (149.171.255.105)  15.212 ms  15.229 ms  15.233 ms
+ 6  138.44.5.0 (138.44.5.0)  1.532 ms  3.763 ms  3.770 ms
+ 7  et-0-3-0.pe1.alxd.nsw.aarnet.net.au (113.197.15.153)  1.746 ms  1.710 ms  1.723 ms
+ 8  xe-0-2-7.bdr1.a.lax.aarnet.net.au (202.158.194.173)  147.757 ms  147.677 ms  147.623 ms
+ 9  singtel.as7473.any2ix.coresite.com (206.72.210.63)  147.699 ms  147.666 ms  147.666 ms
+10  203.208.171.117 (203.208.171.117)  147.955 ms  147.972 ms 203.208.172.153 (203.208.172.153)  324.720 ms
+11  203.208.172.145 (203.208.172.145)  244.974 ms  244.968 ms 203.208.177.110 (203.208.177.110)  326.812 ms
+12  203.208.182.253 (203.208.182.253)  308.185 ms 203.208.158.17 (203.208.158.17)  326.269 ms *
+13  203.208.158.185 (203.208.158.185)  331.731 ms 202.150.221.170 (202.150.221.170)  200.863 ms 203.208.158.185 (203.208.158.185)  326.873 ms
+
+traceroute to 129.94.242.118 (129.94.242.118), 30 hops max, 60 byte packets
+ 1  202.150.221.169 (202.150.221.169)  0.195 ms  0.201 ms  0.226 ms
+ 2  10.11.34.146 (10.11.34.146)  0.526 ms  0.677 ms  0.707 ms
+ 3  aarnet.sgix.sg (103.16.102.67)  209.165 ms  209.131 ms  209.145 ms
+ 4  et-7-3-0.pe1.nsw.brwy.aarnet.net.au (113.197.15.232)  213.691 ms  213.644 ms  213.661 ms
+ 5  138.44.5.1 (138.44.5.1)  199.997 ms  199.886 ms  199.959 ms
+ 6  libcr1-te-1-5.gw.unsw.edu.au (149.171.255.102)  200.049 ms  199.944 ms  200.271 ms
+ 7  irb-51901.kecd1-176q4-cbl-e1.gw.unsw.edu.au (129.94.24.10)  209.225 ms  209.236 ms *
+ 8  * * *
+ 9  129.94.39.23 (129.94.39.23)  212.794 ms  212.888 ms  212.848 ms
+10  * * *
+11  * * *
+12  * * *
+13  * * *
+14  * * *
+15  * * *
+16  * * *
+17  * * *
+18  * * *
+19  * * *
+20  * * *
+21  * * *
+22  * * *
+23  * * *
+24  * * *
+25  * * *
+26  * * *
+27  * * *
+28  * * *
+29  * * *
+30  * * *
+
+
+traceroute to portal.etsi.org (195.238.226.19), 30 hops max, 60 byte packets
+ 1  cserouter1-server.cse.unsw.EDU.AU (129.94.242.251)  0.095 ms  0.083 ms  0.070 ms
+ 2  129.94.39.17 (129.94.39.17)  0.839 ms  0.856 ms  0.879 ms
+ 3  172.17.31.154 (172.17.31.154)  1.467 ms  1.899 ms  1.910 ms
+ 4  po-3-1902.ombcr1.gw.unsw.edu.au (129.94.24.20)  1.255 ms  1.130 ms  1.248 ms
+ 5  unswbr1-te-2-13.gw.unsw.edu.au (149.171.255.105)  1.137 ms  1.161 ms  1.204 ms
+ 6  138.44.5.0 (138.44.5.0)  2.358 ms  1.313 ms  1.310 ms
+ 7  et-2-0-5.bdr1.sing.sin.aarnet.net.au (113.197.15.233)  92.889 ms  92.850 ms  92.855 ms
+ 8  xe-0-0-6-2.a01.sngpsi03.sg.bb.gin.ntt.net (116.51.27.145)  92.803 ms  92.813 ms  92.830 ms
+ 9  ae-15.r23.sngpsi07.sg.bb.gin.ntt.net (129.250.7.84)  97.284 ms ae-14.r22.sngpsi07.sg.bb.gin.ntt.net (129.250.7.82)  93.186 ms ae-15.r23.sngpsi07.sg.bb.gin.ntt.net (129.250.7.84)  97.287 ms
+10  ae-0.a00.sngpsi07.sg.bb.gin.ntt.net (129.250.2.74)  93.320 ms  93.330 ms  93.321 ms
+11  193.251.142.73 (193.251.142.73)  93.469 ms  93.592 ms  93.729 ms
+12  81.52.166.55 (81.52.166.55)  251.484 ms  251.817 ms  251.535 ms
+13  * * *
+14  * * *
+15  * * *
+16  * * *
+17  * * *
+18  * * *
+19  * * *
+20  * * *
+21  * * *
+22  * * *
+23  * * *
+24  * * *
+25  * * *
+26  * * *
+27  * * *
+28  * * *
+29  * * *
+30  * * *
+
+portal.etsi.org did not run traceroute back to CSE machine.
+
+IP address of www.speedtest.com.sg is 202.150.221.170 and
+portal.etsi.org is 195.238.226.19
+
+The reverse path for speedtest basically goes through the same routers
+as the forward path with a few less routers in between.
+
+Routers are not the same on both paths but are very similar like
+unswbr1-te-2-13.gw.unsw.edu.au and libcr1-te-1-5.gw.unsw.edu.au
+as the packets don't have to follow the exact same path everytime.
+
+Exercise 4
+
+Q1.
+
+www.uq.edu.au: 740km (Brisbane)
+www.upm.edu.my: 6605km (Serdang)
+www.tu-berlin.de: 16090km (Berlin)
+
+possible midterm exam q/tips:
+
+where is the propagation delay?
+
+be careful of units when calculating transmission delay
+e.g. dividing MB/Mbps, B is bytes and there are 8 bits (b)
+in a byte so need to convert to the same units first.
+
+Q2.
+
+The delay to the destinations varies over time because
+for example, there can be many packets in the queue at 
+one time and less packets at another which affects the delay time.
+
+Q3.
+
+Processing delay affected by packet size, but a small amount
+Transmission delay affeced by packet size due to bandwidth
+Queue delay only affected by traffic (no. of packets)
+Propagation delay affected by distance/speed.

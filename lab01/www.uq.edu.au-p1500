@@ -1,0 +1,25 @@
+PING www.uq.edu.au (130.102.184.3) 1472(1500) bytes of data.
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=1 ttl=239 time=17.8 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=2 ttl=239 time=17.7 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=3 ttl=239 time=18.1 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=4 ttl=239 time=18.0 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=5 ttl=239 time=17.8 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=6 ttl=239 time=17.6 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=7 ttl=239 time=17.8 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=8 ttl=239 time=17.9 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=9 ttl=239 time=17.9 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=10 ttl=239 time=17.7 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=11 ttl=239 time=18.0 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=12 ttl=239 time=17.9 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=13 ttl=239 time=17.6 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=14 ttl=239 time=17.9 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=15 ttl=239 time=17.8 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=16 ttl=239 time=17.8 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=17 ttl=239 time=17.9 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=18 ttl=239 time=18.1 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=19 ttl=239 time=18.0 ms
+1480 bytes from uqskills.uq.edu.au (130.102.184.3): icmp_seq=20 ttl=239 time=17.7 ms
+
+--- www.uq.edu.au ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19027ms
+rtt min/avg/max/mdev = 17.626/17.894/18.187/0.150 ms
