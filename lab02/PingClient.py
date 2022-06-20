@@ -3,7 +3,7 @@ import sys
 #coding: utf-8
 import socket, datetime, time
 
-def ping(rttSum, pingNum, host = '127.0.0.1', port = 7777):
+def ping(rttSum, rttArray, pingNum, host, port):
     address = (host, port)
     # inint the socket for the TCP connection
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -18,8 +18,8 @@ def ping(rttSum, pingNum, host = '127.0.0.1', port = 7777):
     # send the message to the address
     sock.sendto(msg.encode(), address)
 
-    # set timeout = 1s
-    sock.settimeout(1)
+    # set timeout = 600ms
+    sock.settimeout(0.6)
 
     try:
         # recv the response from serverside
@@ -29,21 +29,39 @@ def ping(rttSum, pingNum, host = '127.0.0.1', port = 7777):
         t2 = datetime.datetime.now()
         rtt = (t2-t1).total_seconds() * 1000
         rttSum += rtt
+        rttArray.append(rtt)
 
-        print(f"ping to {host}. rtt = {rtt} ms. rttSum = {rttSum}")
-        # return rtt
-    except socket.timeout():
-        print(f"ping to {host}. rtt = time out. rttSum = {rttSum}")
-
+        print(f"PING to {host}, seq = {pingNum+3331}, rtt = {rtt} ms\r\n")
+        return rttSum
+    except Exception as e:
+        return -1
+        # Should put exception code here
 
 if __name__ == "__main__":
 
     rttSum = 0
+    rttArray = []
+    newSum = 0
+    host = '127.0.0.1'
+    port = 7777
+
     for i in range(15):
-        ping(rttSum, i)
-    
-    average = rttSum / i
-    print(average)
+        newSum = ping(rttSum, rttArray, i, host, port)
+        if newSum == -1:
+            break
+        else:
+            rttSum = newSum
+    if i == 0 or (rttSum != newSum and i != 14):
+        print(f"PING to {host}, seq = {i+3331}, rtt = time out\r\n")
+    else:
+        print(f"PING to {host}, seq = {i+3331}, rtt = time out\r\n")
+
+    if i != 0:    
+        rttArray.sort()
+        min = rttArray[0]
+        max = rttArray[-1]
+        average = rttSum / i
+        print(f"min_RTT = {min} ms, max_RTT = {max} ms, average_RTT = {average} ms")
 
     '''
     TODO:
