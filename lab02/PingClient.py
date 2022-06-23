@@ -43,6 +43,7 @@ if __name__ == "__main__":
     rttSum = 0
     rttArray = []
     newSum = 0
+    # These need to be argv for user input
     host = '127.0.0.1'
     port = 7777
 
