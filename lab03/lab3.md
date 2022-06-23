@@ -4,30 +4,42 @@
 
 - IP address: 13.185.0.1
 
-- Command: dig @8.8.8.8 www.eecs.berkeley.edu A
+- Command: dig www.eecs.berkeley.edu A
 
 - Output:
-; <<>> DiG 9.16.27-Debian <<>> @8.8.8.8 www.eecs.berkeley.edu A
-; (1 server found)
+; <<>> DiG 9.16.27-Debian <<>> www.eecs.berkeley.edu A
 ;; global options: +cmd
 ;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 53317
-;; flags: qr rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 1
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 29444
+;; flags: qr rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 4, ADDITIONAL: 6
 
 ;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 512
+; EDNS: version: 0, flags:; udp: 4096
 ;; QUESTION SECTION:
 ;www.eecs.berkeley.edu.		IN	A
 
 ;; ANSWER SECTION:
-www.eecs.berkeley.edu.	21600	IN	CNAME	live-eecs.pantheonsite.io.
+www.eecs.berkeley.edu.	72431	IN	CNAME	live-eecs.pantheonsite.io.
 live-eecs.pantheonsite.io. 600	IN	CNAME	fe1.edge.pantheon.io.
 fe1.edge.pantheon.io.	300	IN	A	23.185.0.1
 
-;; Query time: 256 msec
-;; SERVER: 8.8.8.8#53(8.8.8.8)
-;; WHEN: Thu Jun 23 14:23:53 AEST 2022
-;; MSG SIZE  rcvd: 137
+;; AUTHORITY SECTION:
+edge.pantheon.io.	127	IN	NS	ns-644.awsdns-16.net.
+edge.pantheon.io.	127	IN	NS	ns-2013.awsdns-59.co.uk.
+edge.pantheon.io.	127	IN	NS	ns-1213.awsdns-23.org.
+edge.pantheon.io.	127	IN	NS	ns-233.awsdns-29.com.
+
+;; ADDITIONAL SECTION:
+ns-233.awsdns-29.com.	144643	IN	A	205.251.192.233
+ns-644.awsdns-16.net.	82154	IN	A	205.251.194.132
+ns-1213.awsdns-23.org.	78985	IN	A	205.251.196.189
+ns-1213.awsdns-23.org.	67006	IN	AAAA	2600:9000:5304:bd00::1
+ns-2013.awsdns-59.co.uk. 77471	IN	A	205.251.199.221
+
+;; Query time: 20 msec
+;; SERVER: 129.94.208.3#53(129.94.208.3)
+;; WHEN: Thu Jun 23 16:04:22 AEST 2022
+;; MSG SIZE  rcvd: 369
 
 ## Q2
 
