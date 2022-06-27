@@ -10,13 +10,25 @@ def tcplink(sock, addr):
         if data: # if any data recvd from the cient
 
             #TODO process data (i.e. if html do this, png do that)
-            print(data.split())
             dataList = data.split()
-            print(dataList[1]) # can only concatenate str (not "bytes") to str
+            # dataList.decode("utf-8")
+            print(dataList)
+            page = dataList[1].decode('utf-8')
+
+            # page = ""
+            if (page != "/index.html" and
+                page != "/black-dog.png" and
+                page != "/white-dog.png" and
+                page != "/german-shepherd.png"):
+                sock.send("\HTTP/1.1 404 Not Found\n\n".encode())
+                break
+            page = page.replace("/", "")
+            # if (dataPage = "/index.html"):
+            #     page = 'index.html'
             # send response (wlll need to change depending on data)
             sock.send("\HTTP/1.1 200 OK\n\n".encode())
             # send index (content)
-            with open('index.html', 'rb') as f:
+            with open(page, 'rb') as f:
                 content = f.read()
                 sock.sendall(content)
                 f.close()
@@ -38,5 +50,3 @@ if __name__ == '__main__':
         sock, addr = s.accept()
         t = threading.Thread(target=tcplink, args=(sock, addr))
         t.start()
-
-# TODO: look above AND accept argv

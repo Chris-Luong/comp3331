@@ -4,6 +4,8 @@
 
 - IP address: 13.185.0.1
 
+- It is a recursive query
+
 - Command: dig www.eecs.berkeley.edu A
 
 - Output:
@@ -43,11 +45,293 @@ ns-2013.awsdns-59.co.uk. 77471	IN	A	205.251.199.221
 
 ## Q2
 
-The canonical name (CNAME) is live-eecs.pantheonsite.io
+The canonical name (CNAME) is fel.edge.pantheon.io
+
+- Having an alias for the server means multiple hostnames will point to the same subdomain, where each hostname could serve a different purpose.
+
+## Q3
+
+The details in the Authority section tells us that there are multiple aws dns name servers that have the authority to respond to the query.
+
+The Additional section provides resource records (RRs) which relate to the query but are not strictly answers for the query, like information about the IP addresses of the authoritative DNS servers shown in the Authority section.
+
+## Q4
+
+nameserver 129.94.242.2
+
+cat /etc/resolv.conf
+
+domain orchestra.cse.unsw.EDU.AU.
+nameserver 129.94.242.2
+nameserver 129.94.242.45
+nameserver 129.94.242.33
+options rotate
+search orchestra.cse.unsw.EDU.AU. cse.unsw.EDU.AU. unsw.EDU.AU.
+
+
+## Q5
+
+DNS nameservers are:
+
+- 169.229.60.61
+- 169.229.60.153
+- 128.32.136.3
+- 128.32.136.14
+- 192.107.102.142
+
+dig eecs.berkeley.edu A
+
+; <<>> DiG 9.9.5-9+deb8u19-Debian <<>> eecs.berkeley.edu A
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 34576
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 5, ADDITIONAL: 10
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;eecs.berkeley.edu.		IN	A
+
+;; ANSWER SECTION:
+eecs.berkeley.edu.	72919	IN	A	23.185.0.1
+
+;; AUTHORITY SECTION:
+eecs.berkeley.edu.	47630	IN	NS	adns3.berkeley.edu.
+eecs.berkeley.edu.	47630	IN	NS	adns1.berkeley.edu.
+eecs.berkeley.edu.	47630	IN	NS	adns2.berkeley.edu.
+eecs.berkeley.edu.	47630	IN	NS	ns.CS.berkeley.edu.
+eecs.berkeley.edu.	47630	IN	NS	ns.eecs.berkeley.edu.
+
+;; ADDITIONAL SECTION:
+ns.CS.berkeley.edu.	75466	IN	A	169.229.60.61
+ns.eecs.berkeley.edu.	52520	IN	A	169.229.60.153
+ns.eecs.berkeley.edu.	32340	IN	AAAA	2607:f140:8:2160::30
+adns1.berkeley.edu.	405	IN	A	128.32.136.3
+adns1.berkeley.edu.	405	IN	AAAA	2607:f140:ffff:fffe::3
+adns2.berkeley.edu.	405	IN	A	128.32.136.14
+adns2.berkeley.edu.	405	IN	AAAA	2607:f140:ffff:fffe::e
+adns3.berkeley.edu.	405	IN	A	192.107.102.142
+adns3.berkeley.edu.	405	IN	AAAA	2607:f140:a000:d::abc
+
+;; Query time: 0 msec
+;; SERVER: 129.94.242.2#53(129.94.242.2)
+;; WHEN: Mon Jun 27 22:44:32 AEST 2022
+;; MSG SIZE  rcvd: 351
+
+
+## Q6
+
+DNS name: webserver.seecs.nust.edu.pk
+
+nslookup 111.68.101.54
+
+Server:		129.94.242.2
+Address:	129.94.242.2#53
+
+Non-authoritative answer:
+54.101.68.111.in-addr.arpa	name = webserver.seecs.nust.edu.pk.
+
+Authoritative answers can be found from:
+101.68.111.in-addr.arpa	nameserver = ns1.hec.gov.pk.
+101.68.111.in-addr.arpa	nameserver = ns2.hec.gov.pk.
+ns1.hec.gov.pk	internet address = 103.4.93.5
+ns2.hec.gov.pk	internet address = 103.4.93.6
+
+## Q7
+
+Did not get an authoritative answer because the IP address we used in the query is not in the Authority section meaning it does have the authority to respond to the query.
+
+dig 129.94.242.33 yahoo.com 
+
+; <<>> DiG 9.9.5-9+deb8u19-Debian <<>> 129.94.242.33 yahoo.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 26458
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;129.94.242.33.			IN	A
+
+;; AUTHORITY SECTION:
+.			10800	IN	SOA	a.root-servers.net. nstld.verisign-grs.com. 2022062700 1800 900 604800 86400
+
+;; Query time: 6 msec
+;; SERVER: 129.94.242.2#53(129.94.242.2)
+;; WHEN: Mon Jun 27 23:02:12 AEST 2022
+;; MSG SIZE  rcvd: 117
+
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 40330
+;; flags: qr rd ra; QUERY: 1, ANSWER: 6, AUTHORITY: 5, ADDITIONAL: 10
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;yahoo.com.			IN	A
+
+;; ANSWER SECTION:
+yahoo.com.		640	IN	A	98.137.11.164
+yahoo.com.		640	IN	A	98.137.11.163
+yahoo.com.		640	IN	A	74.6.231.20
+yahoo.com.		640	IN	A	74.6.231.21
+yahoo.com.		640	IN	A	74.6.143.26
+yahoo.com.		640	IN	A	74.6.143.25
+
+;; AUTHORITY SECTION:
+yahoo.com.		39538	IN	NS	ns4.yahoo.com.
+yahoo.com.		39538	IN	NS	ns2.yahoo.com.
+yahoo.com.		39538	IN	NS	ns1.yahoo.com.
+yahoo.com.		39538	IN	NS	ns3.yahoo.com.
+yahoo.com.		39538	IN	NS	ns5.yahoo.com.
+
+;; ADDITIONAL SECTION:
+ns1.yahoo.com.		150342	IN	A	68.180.131.16
+ns1.yahoo.com.		48262	IN	AAAA	2001:4998:1b0::7961:686f:6f21
+ns2.yahoo.com.		132928	IN	A	68.142.255.16
+ns2.yahoo.com.		46456	IN	AAAA	2001:4998:1c0::7961:686f:6f21
+ns3.yahoo.com.		1558	IN	A	27.123.42.42
+ns3.yahoo.com.		1558	IN	AAAA	2406:8600:f03f:1f8::1003
+ns4.yahoo.com.		562192	IN	A	98.138.11.157
+ns5.yahoo.com.		21764	IN	A	202.165.97.53
+ns5.yahoo.com.		21764	IN	AAAA	2406:2000:1d0::7961:686f:6f21
+
+;; Query time: 4 msec
+;; SERVER: 129.94.242.2#53(129.94.242.2)
+;; WHEN: Mon Jun 27 23:02:12 AEST 2022
+;; MSG SIZE  rcvd: 416
+
+
+## Q8
+
+Similar response to Q7.
+
+dig 169.229.60.61 yahoo.com A
+
+; <<>> DiG 9.9.5-9+deb8u19-Debian <<>> 169.229.60.61 yahoo.com A
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 52992
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;169.229.60.61.			IN	A
+
+;; AUTHORITY SECTION:
+.			10800	IN	SOA	a.root-servers.net. nstld.verisign-grs.com. 2022062700 1800 900 604800 86400
+
+;; Query time: 51 msec
+;; SERVER: 129.94.242.2#53(129.94.242.2)
+;; WHEN: Mon Jun 27 23:15:26 AEST 2022
+;; MSG SIZE  rcvd: 117
+
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 24790
+;; flags: qr rd ra; QUERY: 1, ANSWER: 6, AUTHORITY: 5, ADDITIONAL: 10
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;yahoo.com.			IN	A
+
+;; ANSWER SECTION:
+yahoo.com.		1800	IN	A	74.6.231.20
+yahoo.com.		1800	IN	A	74.6.143.26
+yahoo.com.		1800	IN	A	98.137.11.163
+yahoo.com.		1800	IN	A	74.6.231.21
+yahoo.com.		1800	IN	A	98.137.11.164
+yahoo.com.		1800	IN	A	74.6.143.25
+
+;; AUTHORITY SECTION:
+yahoo.com.		38744	IN	NS	ns5.yahoo.com.
+yahoo.com.		38744	IN	NS	ns4.yahoo.com.
+yahoo.com.		38744	IN	NS	ns2.yahoo.com.
+yahoo.com.		38744	IN	NS	ns1.yahoo.com.
+yahoo.com.		38744	IN	NS	ns3.yahoo.com.
+
+;; ADDITIONAL SECTION:
+ns1.yahoo.com.		149548	IN	A	68.180.131.16
+ns1.yahoo.com.		47468	IN	AAAA	2001:4998:1b0::7961:686f:6f21
+ns2.yahoo.com.		132134	IN	A	68.142.255.16
+ns2.yahoo.com.		45662	IN	AAAA	2001:4998:1c0::7961:686f:6f21
+ns3.yahoo.com.		764	IN	A	27.123.42.42
+ns3.yahoo.com.		764	IN	AAAA	2406:8600:f03f:1f8::1003
+ns4.yahoo.com.		561398	IN	A	98.138.11.157
+ns5.yahoo.com.		20970	IN	A	202.165.97.53
+ns5.yahoo.com.		20970	IN	AAAA	2406:2000:1d0::7961:686f:6f21
+
+;; Query time: 100 msec
+;; SERVER: 129.94.242.2#53(129.94.242.2)
+;; WHEN: Mon Jun 27 23:15:26 AEST 2022
+;; MSG SIZE  rcvd: 416
 
 ## Q9
 
-refer to notes for aa
+dig @68.180.131.16 yahoo.com NS
+
+; <<>> DiG 9.9.5-9+deb8u19-Debian <<>> @68.180.131.16 yahoo.com NS
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 54507
+;; flags: qr aa rd; QUERY: 1, ANSWER: 5, AUTHORITY: 0, ADDITIONAL: 10
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1272
+;; QUESTION SECTION:
+;yahoo.com.			IN	NS
+
+;; ANSWER SECTION:
+yahoo.com.		172800	IN	NS	ns1.yahoo.com.
+yahoo.com.		172800	IN	NS	ns2.yahoo.com.
+yahoo.com.		172800	IN	NS	ns5.yahoo.com.
+yahoo.com.		172800	IN	NS	ns4.yahoo.com.
+yahoo.com.		172800	IN	NS	ns3.yahoo.com.
+
+;; ADDITIONAL SECTION:
+ns1.yahoo.com.		1209600	IN	A	68.180.131.16
+ns2.yahoo.com.		1209600	IN	A	68.142.255.16
+ns3.yahoo.com.		1800	IN	A	27.123.42.42
+ns4.yahoo.com.		1209600	IN	A	98.138.11.157
+ns5.yahoo.com.		86400	IN	A	202.165.97.53
+ns1.yahoo.com.		86400	IN	AAAA	2001:4998:1b0::7961:686f:6f21
+ns2.yahoo.com.		86400	IN	AAAA	2001:4998:1c0::7961:686f:6f21
+ns3.yahoo.com.		1800	IN	AAAA	2406:8600:f03f:1f8::1003
+ns5.yahoo.com.		86400	IN	AAAA	2406:2000:1d0::7961:686f:6f21
+
+;; Query time: 141 msec
+;; SERVER: 68.180.131.16#53(68.180.131.16)
+;; WHEN: Mon Jun 27 23:27:50 AEST 2022
+;; MSG SIZE  rcvd: 320
+
+dig @68.180.131.16 yahoo.com MX
+
+; <<>> DiG 9.9.5-9+deb8u19-Debian <<>> @68.180.131.16 yahoo.com MX
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 7989
+;; flags: qr aa rd; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1272
+;; QUESTION SECTION:
+;yahoo.com.			IN	MX
+
+;; ANSWER SECTION:
+yahoo.com.		1800	IN	MX	1 mta7.am0.yahoodns.net.
+yahoo.com.		1800	IN	MX	1 mta5.am0.yahoodns.net.
+yahoo.com.		1800	IN	MX	1 mta6.am0.yahoodns.net.
+
+;; Query time: 141 msec
+;; SERVER: 68.180.131.16#53(68.180.131.16)
+;; WHEN: Mon Jun 27 23:29:39 AEST 2022
+;; MSG SIZE  rcvd: 117
 
 ## Q10
 
@@ -56,6 +340,7 @@ refer to notes for aa
 - Commands:
 
 dig . NS
+
 ; <<>> DiG 9.16.27-Debian <<>> . NS
 ;; global options: +cmd
 ;; Got answer:
