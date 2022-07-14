@@ -9,6 +9,7 @@
 - Command: dig www.eecs.berkeley.edu A
 
 - Output:
+
 ; <<>> DiG 9.16.27-Debian <<>> www.eecs.berkeley.edu A
 ;; global options: +cmd
 ;; Got answer:
