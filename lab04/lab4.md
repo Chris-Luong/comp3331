@@ -1,5 +1,5 @@
 # Exercise 1
-- go to bottom of file for link
+
 ## Question 1
 
 Server (gaia.cs.umass.edu): 128.119.245.12, port 1161 
@@ -53,14 +53,17 @@ Sequence number of TCP segment containing HTTP POST command: 232129013
 
 First 6 segments in TCP connnection (POST command as the first)
 
-|Segment number |Sequence numbers |Time (sec) |ACK receieved |RTT (sec) | Estimated RTT|
+|Segment number |Sequence numbers |Time (sec) |ACK receieved (sec)|RTT (sec) | Estimated RTT|
 |--- | --- | --- | --- | --- | ---|
-|1|232129013|0.02647700||||
-|2|232129578|||||
-|3|232131038|||||
-|4|232132498|||||
-|5|232133958|||||
-|6|232135418|||||
+|1|232129013|0.026477|0.026477|0.02746|0.02746|
+|2|232129578|0.041737|0.041737|0.035557|0.02847|
+|3|232131038|0.054026|0.054026|0.070059|0.03367|
+|4|232132498|0.054690|0.054690|0.114428|0.04376|
+|5|232133958|0.077405|0.077405|0.139894|0.05578|
+|6|232135418|0.078157|0.078157|0.189645|0.07251|
+
+Estimated RTT formula: (1-0.125) * RTT + 0.125 * RTT where alpha is 0.125
+
 
 ## Question 4
 
@@ -73,35 +76,51 @@ First 6 segments in TCP connnection (POST command as the first)
 |5|1460|
 |6|1460|
 
+## Question 5
 
+The minimum amount of available buffer for the entire trace is 5840 bytes based off the win parameter in the first ACK from the server. The lack of receiver buffer space never throttles the sender.
 
+## Question 6
 
+There are no retransmitteed segments in the trace file. To find this, one can search tcp.analysis.retransmission or by sorting the source in ascending order and checking the sequence number.
 
+## Question 7
 
+1460 bytes are typically acknowledged by the receiver in an ACK. No.
 
+## Question 8
 
+Throughput = Total amount of data / Total transmission time
 
+Total amount of data = Sequence number of last ACK - sequence number of first segment.
+232293103 - 232129013 = 164090 bytes
 
+Total transmission time = Time of last ACK - Time of first segment
+5.455830 - 0.026477 = 5.429353 seconds
 
+Thus, throughput = 164090 / 5.429353 = 30222.7539819 bytes/sec.
 
+# Exercise 2
 
+## Question 1
 
+Sequence number of TCP SYN segment used to initiate TCP connection: 2818463618
 
+## Question 2
 
+SYNACK segment sent by server to reply to SYN: seq=1247095790, ack=2818463619 where ack = seq num + data. In this case, there is no data and only the SYNACK so it is seq num + 1.
 
+## Question 3
 
+ACK segment sent by client in response to SYNACK: seq=2818463519, ack=1247095791. The segment does not contain data because the ack number increased by 1 which is the size of the ACK.
 
+## Question 4
 
+The active close was done by both client and server since they sent the FINACK almost simulatneously. Thus, a simultaneous close has been performed.
 
+## Question 5
 
+Client to server: 2818463653 - 2818463618 - 2(SYN + FIN) = 33 bytes
+Server to client: 1247095832 - 1247095790 - 2(SYN + FIN) = 40 bytes
 
-
-
-
-
-
-
-
-
-
-https://github.com/wickwickthedog/comp3331
+The number of bytes sent between a client and server/server and client is the difference between the Initial Sequence Number and the final ACK sent from the other side.
