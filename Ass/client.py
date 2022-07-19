@@ -1,3 +1,16 @@
+"""
+    Python 3
+    Usage: python3 client.py [SERVER IP] [SERVER PORT]
+    coding: utf-8
+    Christopher Luong
+"""
+
+"""
+TODO:
+    proper request calls
+    peer to peer communication
+"""
+
 from socket import *
 import sys
 
@@ -16,15 +29,21 @@ clientSocket = socket(AF_INET, SOCK_STREAM)
 clientSocket.connect(serverAddress)
 
 while True:
-    message = input("Username: ")
-    clientSocket.sendall(message.encode())
+    # send loggin_in var to the server
+
+    # Input username
+    username = input(clientSocket.recv(1024).decode())
+    clientSocket.send(username.encode())
+
+    # Input password
+    password = input(clientSocket.recv(1024).decode())
+    clientSocket.send(str.encode(password))
 
     # receive response from the server
     # 1024 is a suggested packet size, you can specify it as 2048 or others
     data = clientSocket.recv(1024)
     receivedMessage = data.decode()
-
-    
+    print(receivedMessage)
 
 
 # close the socket
