@@ -11,8 +11,8 @@ report.pdf: attribute multithreading to WebCMS sample code
     single user login
     blocking for unsuccessful attempts (based on number and time)
     multiple clients logged in
-    broadcast, read and room functionality
-    active users and log off functionality
+    broadcast, read and room functionality (write to messagelog.txt)
+    active users and log off functionality (need to write to a userlog.txt file)
 """
 
 """
@@ -23,16 +23,16 @@ Thoughts:
 """
 
 import os
-from time import time
+from time import sleep, time
 from socket import *
 from threading import Thread
 import sys, select
 
 # acquire server host and port from command line parameter
 if len(sys.argv) != 3:
-    print("\n===== Error usage, python3 TCPServer3.py SERVER_PORT number_of_consecutive_failed_attempts ======\n")
+    print("\n===== Error usage, python3 server.py SERVER_PORT number_of_consecutive_failed_attempts ======\n")
     exit(0)
-elif not sys.argv[2].isalnum() or int(sys.argv[2]) > 5 or int(sys.argv[2]) < 1:
+elif not sys.argv[2].isalnum() or int(sys.argv[2]) > 5 or int(sys.argv[2]) < 1: # error message from spec
     print(f"Invalid number of allowed failed consecutive attempt: {sys.argv[2]}. The valid value of argument number is an integer between 1 and 5.")
     exit(0)
 serverHost = "127.0.0.1"
@@ -44,14 +44,14 @@ numAttempts = int(sys.argv[2])
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(serverAddress)
 
-# read credentials file and turn it into a dictionary
-userInfo = {}
+# read credentials file to create a dicionary for user information
+userInfo = {} # make this a list of dicts instead
 f = open('credentials.txt', 'r')
 for pairs in f.readlines():
     userInfo[pairs.split()[0]] = pairs.split()[1]
 
 # attempts dictionary, or put this as the status in userInfo
-failed_attempt_IP = {}
+failed_attempt_IP = {} # or have a blockdUser dict
 
 # session dict
 session_dict = {}
@@ -80,24 +80,24 @@ class ClientThread(Thread):
     def run(self):
         # When user is not logged in, check if the cookie for this
         # User is stored within the session dict
-        is_logged = False
+        isLogged = False
 
         while self.clientAlive:
-
+            # Make it while not logged, if numAttempt reached, sleep
             # Authentication
-            if not is_logged:
-                failed_count = 0
-                while failed_count < numAttempts:
+            while not isLogged:
+                attemptCnt = 0
+                while attemptCnt < numAttempts:
                     print('[send] username request')
                     self.clientSocket.send(str.encode('Username: '))  # Username
                     username = self.clientSocket.recv(1024)
                     username = username.decode()
 
-                    # check if username exists
+                    # check if username exists TODO: if user logged in already
                     if username not in userInfo.keys():
                         message = 'Invalid username!'
                         self.clientSocket.send(str.encode(message))
-                        failed_count += 1
+                        attemptCnt += 1
                         continue
 
                     print('[send] password request')
@@ -105,16 +105,22 @@ class ClientThread(Thread):
                     password = self.clientSocket.recv(1024)
                     password = password.decode()
 
-                    # Check if password is valid
+                    # Check if password is valid TODO: if user is blocked
                     if password != userInfo[username]:
-                        failed_count += 1
                         message = 'Invalid password!'
                         self.clientSocket.send(str.encode(message))
+                        attemptCnt += 1
                         continue
-                    else:
-                        print("User logged in successfully!")
-                        self.clientSocket.send(str.encode("Welcome to TOOM!\n"))
-
+                    isLogged = True
+                    print("User logged in successfully!")
+                    self.clientSocket.send(str.encode("Welcome to TOOM!\n"))
+                if not isLogged:
+                    # sleep pauses everything so use a time add instead.
+                    # https://www.programiz.com/python-programming/time
+                    # how to print one line but separated in code
+                    print("Your account is blocked due to multiple login failures. Please try again later")
+                    sleep(10)
+            print("Closing connection")
             self.clientSocket.close()
 
 
