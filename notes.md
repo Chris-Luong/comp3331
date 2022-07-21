@@ -21,3 +21,14 @@
 - 192.168.xxx.x and 10.0.0.x refer to local router
 - ack no. is seq no. + data
 - SYN is 1 so if you have seq no. of 0, then the ack in [SYN, ACK] for the 3 way handshake is 1.
+
+# Lab 5
+
+## Revision of TCP Congestion Control
+
+This question will probably pop up in exam.
+Refer to week 5 Transport Layer Part 2 slides page 91 onwards.
+
+### Question 1
+Num 1 is triple dup ack
+Num 2 is congestion control
