@@ -73,7 +73,7 @@ class ClientThread(Thread):
         while self.clientAlive:
             # Make it while not logged, if numAttempt reached, sleep
             # Authentication
-            while not isLogged:
+            if not isLogged:
                 attemptCnt = 0
                 while attemptCnt < numAttempts:
                     print('[send] username request')
@@ -85,7 +85,7 @@ class ClientThread(Thread):
                     if username not in userInfo.keys():
                         message = 'Invalid username!'
                         self.clientSocket.send(str.encode(message))
-                        attemptCnt += 1
+                        attemptCnt += 1 # remove if user can do unlimited tims
                         continue
 
                     print('[send] password request')
@@ -102,16 +102,18 @@ class ClientThread(Thread):
                     isLogged = True
                     print("User logged in successfully!")
                     self.clientSocket.send(str.encode("Welcome to TOOM!\n"))
-                if not isLogged:
-                    # sleep pauses everything so use a time add instead.
-                    # https://www.programiz.com/python-programming/time
-                    # how to print one line but separated in code
-                    print("Your account is blocked due to multiple login failures. Please try again later")
-                    sleep(10)
-            print("Closing connection")
+
+            self.clientSocket.send(str.encode("Invalid password. Account blocked 10s\n"))
+            print("[send] user blocked. Closing connection")
             self.clientSocket.close()
+            self.clientAlive = False
 
-
+# if not isLogged:
+#     # sleep pauses everything so use a time add instead.
+#     # https://www.programiz.com/python-programming/time
+#     # how to print one line but separated in code
+#     print("Your account is blocked due to multiple login failures. Please try again later")
+#     sleep(10)
 print("\n===== Server is running =====")
 print("===== Waiting for connection request from clients...=====")
 

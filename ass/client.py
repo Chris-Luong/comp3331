@@ -32,7 +32,7 @@ while True:
     # send loggin_in var to the server
 
     # Input username
-    username = input(clientSocket.recv(1024).decode())
+    # username = input(clientSocket.recv(1024).decode())
     clientSocket.send(username.encode())
 
     # Input password
