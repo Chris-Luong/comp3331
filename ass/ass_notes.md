@@ -1,19 +1,24 @@
 
 # TODO
+- user blocking works, implement 10s delay (lets them conn and enter usrname and ps before displaying blocked message)
+- report.pdf: attribute multithreading to WebCMS sample code
+- single user login
+- blocking for unsuccessful attempts (based on number and time)
+- multiple clients logged in
+- broadcast, read and room functionality
+    - (write to messagelog.txt, use sys and os to create file if it doesn't exist)
+- active users and log off functionality
+    - (need to write to a userlog.txt file)
+
+# Testing
     Add some newlines to the bottom of credentials.txt to see if it crashes
-    report.pdf: attribute multithreading to WebCMS sample code
-    single user login
-    blocking for unsuccessful attempts (based on number and time)
-    multiple clients logged in
-    broadcast, read and room functionality
-        (write to messagelog.txt, use sys and os to create file if it doesn't exist)
-    active users and log off functionality
-        (need to write to a userlog.txt file)
 
 # Thoughts
 - userInfo is list of dicts, or dict with username as key and dict of things as value
 
 - userInfo.status options: [active, inactive, blocked] with active = logged in;
+
+- maybe use json.dumps for making a json file with user info.
 
 - with any future options, might have to group with 'active' in conditional as logged in
 

@@ -46,10 +46,10 @@ while data != '': # this should be while connected
     else:
         firstConnection = False
     receivedMessage = data.decode()       
-
+    # print(receivedMessage)
     if receivedMessage == BLOCKED_USER_MESSAGE:
         # close the socket
-        print("closing connection")
+        print(receivedMessage)
         clientSocket.close()
         break
     # Input username
@@ -64,5 +64,5 @@ while data != '': # this should be while connected
     clientSocket.send(str.encode(password))
 
 # close the socket
-print("closing connection")
-clientSocket.close()
+# print("closing connection")
+# clientSocket.close()

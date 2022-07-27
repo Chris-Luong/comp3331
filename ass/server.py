@@ -75,9 +75,11 @@ class ClientThread(Thread):
         usernameError = False
         passwordError = False
         attemptCnt = 0
+        count = 0
 
         while self.clientAlive:
             # Authentication
+            count += 1
             if userStatus is INACTIVE_USER:
                 if attemptCnt >= numAttempts:
                     userStatus = BLOCKED_USER
