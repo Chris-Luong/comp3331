@@ -1,14 +1,19 @@
 
 # TODO
 - user blocking works, implement 10s delay (lets them conn and enter usrname and ps before displaying blocked message)
+- Need to add following info into userlog.txt
+    - Active user sequence number; timestamp; username; client IP address;
+    client UDP server port number
+    - e.g. 1; 1 Jun 2022 21:30:04; Yoda; 129.64.1.11; 6666
+- active users and log off functionality
+    - (need to write to a userlog.txt file)
 - report.pdf: attribute multithreading to WebCMS sample code
 - single user login
 - blocking for unsuccessful attempts (based on number and time)
 - multiple clients logged in
 - broadcast, read and room functionality
     - (write to messagelog.txt, use sys and os to create file if it doesn't exist)
-- active users and log off functionality
-    - (need to write to a userlog.txt file)
+
 
 # Testing
     Add some newlines to the bottom of credentials.txt to see if it crashes
@@ -21,6 +26,10 @@
 - maybe use json.dumps for making a json file with user info.
 
 - with any future options, might have to group with 'active' in conditional as logged in
+
+# Assumptions
+
+- users all have different usernames
 
 # Notes
 
