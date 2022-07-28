@@ -2,13 +2,8 @@
     Python 3
     Usage: python3 server.py [PORT NUMBER] [NUMBER OF CONSECUTIVE ATTEMPTS]
     coding: utf-8
-    Christopher Luong
+    Christopher Luong (z5309196)
 """
-
-"""
-TODO: CHECK ass_notes.md
-"""
-
 
 import os
 from datetime import datetime, timedelta
@@ -82,7 +77,6 @@ class ClientThread(Thread):
 
         while self.clientAlive:
             # Authentication
-            count += 1
             # if userStatus is INACTIVE_USER:
             message = ''
             if usernameError:
@@ -117,15 +111,16 @@ class ClientThread(Thread):
                 if attemptCnt >= numAttempts:
                     userInfo[username]['status'] = BLOCKED_USER                  
                 # continue
+            else:               
+                userInfo[username]['status'] = ACTIVE_USER
+                print("User logged in successfully!")
+                self.clientSocket.send(str.encode("Welcome to TOOM!\n"))
             if userInfo[username]['status'] is BLOCKED_USER: # cprrect ps but user blocked
                 print("[send] user blocked. Closing connection")
                 self.clientSocket.send(str.encode(BLOCKED_USER_MESSAGE))
                 self.clientSocket.close()
                 self.clientAlive = False
-            else:               
-                userInfo[username]['status'] = ACTIVE_USER # add this to a field in userInfo?
-                print("User logged in successfully!")
-                self.clientSocket.send(str.encode("Welcome to TOOM!\n"))
+
 
 # if not isLogged:
 #     # sleep pauses everything so use a time add instead.

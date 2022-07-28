@@ -2,7 +2,7 @@
     Python 3
     Usage: python3 client.py [SERVER IP] [SERVER PORT]
     coding: utf-8
-    Christopher Luong
+    Christopher Luong (z5309196)
 """
 
 """
