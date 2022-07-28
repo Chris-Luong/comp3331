@@ -5,4 +5,5 @@ BLOCKED_USER = 2
 
 # Longer messages
 INVALID_ATTEMPT_NUMBER_MESSAGE = "Invalid number of allowed failed consecutive attempt: "
-BLOCKED_USER_MESSAGE = "Invalid password. Your account has been blocked. Please try again later"
+INVALID_PASSWORD_MESSAGE = "Invalid password. Your account has been blocked. Please try again later"
+BLOCKED_USER_MESSAGE = "Your account has been blocked due to multiple login failures. Please try again later"

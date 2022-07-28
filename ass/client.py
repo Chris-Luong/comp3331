@@ -47,11 +47,11 @@ while data != '': # this should be while connected
         firstConnection = False
     receivedMessage = data.decode()       
     # print(receivedMessage)
-    if receivedMessage == BLOCKED_USER_MESSAGE:
+    if receivedMessage == INVALID_PASSWORD_MESSAGE or receivedMessage == BLOCKED_USER_MESSAGE:
         # close the socket
         print(receivedMessage)
         clientSocket.close()
-        break
+        exit() # was using break before but it did not work
     # Input username
     # print("requesting username")
     username = input(receivedMessage)

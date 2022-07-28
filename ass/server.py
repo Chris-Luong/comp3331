@@ -103,24 +103,30 @@ class ClientThread(Thread):
             password = password.decode()
 
             # Check if password is valid TODO: if user is blocked
-            if password != userInfo[username]['password']:
+            if (password != userInfo[username]['password'] and
+                userInfo[username]['status'] != BLOCKED_USER):
                 # message = 'Invalid password!'
                 # self.clientSocket.send(str.encode(message))
                 passwordError = True
                 attemptCnt += 1
                 if attemptCnt >= numAttempts:
-                    userInfo[username]['status'] = BLOCKED_USER                  
-                # continue
-            else:               
-                userInfo[username]['status'] = ACTIVE_USER
-                print("User logged in successfully!")
-                self.clientSocket.send(str.encode("Welcome to TOOM!\n"))
-            if userInfo[username]['status'] is BLOCKED_USER: # cprrect ps but user blocked
+                    userInfo[username]['status'] = BLOCKED_USER
+                    print("[send] user blocked. Closing connection")
+                    self.clientSocket.send(str.encode(INVALID_PASSWORD_MESSAGE))
+                    self.clientSocket.close()
+                    self.clientAlive = False
+                    break
+                else:
+                    continue
+            elif userInfo[username]['status'] is BLOCKED_USER: # cprrect ps but user blocked
                 print("[send] user blocked. Closing connection")
                 self.clientSocket.send(str.encode(BLOCKED_USER_MESSAGE))
                 self.clientSocket.close()
                 self.clientAlive = False
-
+                break
+            userInfo[username]['status'] = ACTIVE_USER # add this to a field in userInfo?
+            print("User logged in successfully!")
+            self.clientSocket.send(str.encode("Welcome to TOOM!\n"))
 
 # if not isLogged:
 #     # sleep pauses everything so use a time add instead.
