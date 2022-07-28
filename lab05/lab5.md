@@ -2,7 +2,7 @@
 
 ## Question 1
 
-The maximum size of the congestion window that the TCP flw reaches is 100. When the congestion window reaches this value, there is a triple dup ACK/timeout and the congestion window size drops to 1. The slow start threshold (ssthresh) is set to half of 100 which is 50. This is done to avoid congestion. The slow start phase will start again after this with the window size being 1.
+The maximum size of the congestion window that the TCP flow reaches is 100. When the congestion window reaches this value, there is a triple dup ACK/timeout and the congestion window size drops to 1. The slow start threshold (ssthresh) is set to half of 100 which is 50. This is done to avoid congestion. The slow start phase will start again after this with the window size being 1.
 
 ## Question 2
 
@@ -12,7 +12,7 @@ From the WindowTPut graph, the average throughput is around 188 packets/sec whic
 
 ## Question 3
 
-As the window size decreases, the amount of oscillation in TCP decreases. 50 is the value of the maximum congestion window at which TCP stops oscillating. The average throughput at this point is 227.73037542662115 packets/sec which is 122974.40273 bps. Average throughput compare to link capacity of 1Mbps (125000 bytes):
+As the window size decreases, the amount of oscillation in TCP decreases. 50 is the value of the maximum congestion window at which TCP stops oscillating. The average throughput at this point is 227.73037542662115 packets/sec which is 122974.40273 bps. Average throughput compared to link capacity of 1Mbps (125000 bytes):
 122974.40273 / 125000 * 100 = 98.38%
 
 ## Question 4
@@ -27,7 +27,7 @@ Each flow gets an equal share of the capacity of the common link because each fl
 
 ## Question 2
 
-The throughput of pre-existing TCP flows decreases when a new flow is created in order to provide an equal share. The mechanisms of TCP that contribute to this behaviour are that the congestion window size increases rapidly during the slow stat phase, causing congestion. As a result, all flows will adjust to adapt to the network so this behaviour is fair.
+The throughput of pre-existing TCP flows decreases when a new flow is created in order to provide an equal share. The mechanisms of TCP that contribute to this behaviour are that the congestion window size increases rapidly during the slow start phase, causing congestion. As a result, all flows will adjust to adapt to the network so this behaviour is fair.
 
 # Exercise 3
 
@@ -48,4 +48,4 @@ The disadvantages are:
 - Unaware of package loss and corrupted packages
 - Packets can arrive out of order
 
-If everybody started using UDP instead of TCP, there will be a lot of package loss, more network congestion leading to lower performancce and more difficulty detecting corrupted packages.
+If everybody started using UDP instead of TCP, there will be a lot of package loss, more network congestion leading to lower performance and more difficulty detecting corrupted packages.
