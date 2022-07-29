@@ -1,6 +1,7 @@
 
 # TODO
 - user blocking works, implement 10s delay (lets them conn and enter usrname and ps before displaying blocked message)
+- add if statement for invalid username in client
 - Need to add following info into userlog.txt
     - Active user sequence number; timestamp; username; client IP address;
     client UDP server port number

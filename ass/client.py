@@ -57,7 +57,7 @@ while data != '': # this should be while connected
     username = input(receivedMessage)
     clientSocket.send(str.encode(username))
     # will need to receive from server to see if success or fail from message
-
+    """ add if statement to see if username was valid"""
     # Input password
     # print("requesting password")
     password = input(clientSocket.recv(1024).decode())
