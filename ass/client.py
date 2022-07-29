@@ -34,6 +34,25 @@ clientSocket.connect(serverAddress)
 
 data = clientSocket.recv(1024)
 firstConnection = True
+isActive = False
+result = INACTIVE_USER
+
+"""
+    Parameter is the message received from server
+    Return type is constant integer
+"""
+def loginUser(receivedMessage):
+    if receivedMessage == INVALID_PASSWORD_MESSAGE or receivedMessage == BLOCKED_USER_MESSAGE:
+        print(receivedMessage)
+        return BLOCKED_USER
+    elif receivedMessage == USERNAME_ERROR_MESSAGE or receivedMessage == PASSWORD_ERROR_MESSAGE:
+        return INACTIVE_USER
+    elif receivedMessage == LOGGED_IN_USER_MESSAGE:
+        return ACTIVE_USER
+    else:
+        userInput = input(receivedMessage)
+        clientSocket.send(str.encode(userInput))
+        return INACTIVE_USER
 
 while data != '': # this should be while connected
     # send loggin_in var to the server
@@ -45,23 +64,34 @@ while data != '': # this should be while connected
         data = clientSocket.recv(1024)
     else:
         firstConnection = False
-    receivedMessage = data.decode()       
-    # print(receivedMessage)
-    if receivedMessage == INVALID_PASSWORD_MESSAGE or receivedMessage == BLOCKED_USER_MESSAGE:
-        # close the socket
-        print(receivedMessage)
-        clientSocket.close()
-        exit() # was using break before but it did not work
-    # Input username
-    # print("requesting username")
-    username = input(receivedMessage)
-    clientSocket.send(str.encode(username))
-    # will need to receive from server to see if success or fail from message
-    """ add if statement to see if username was valid"""
-    # Input password
-    # print("requesting password")
-    password = input(clientSocket.recv(1024).decode())
-    clientSocket.send(str.encode(password))
+    receivedMessage = data.decode()
+
+    if not isActive:
+        result = loginUser(receivedMessage)
+    
+    if result == INACTIVE_USER: # invalid username/password message received so get next msg from server (username: or password:)
+        continue    
+    elif result == BLOCKED_USER:
+        clientSocket.close() # ------------------------is this needed? see what happens if removed
+        break
+    elif result == ACTIVE_USER:
+        isActive = True
+        print('user is active')
+        clientSocket.close() # remove once below is implemented
+        break # proceeed to request for command in next line and deal with this
+
+
+    # # Input username
+    # # print("requesting username")
+    # username = input(receivedMessage)
+    # clientSocket.send(str.encode(username))
+    # # will need to receive from server to see if success or fail from message
+    # """ add if statement to see if username was valid"""
+    # print(f"received message is \"{receivedMessage}\"")
+    # # Input password
+    # # print("requesting password")
+    # password = input(clientSocket.recv(1024).decode())
+    # clientSocket.send(str.encode(password))
 
 # close the socket
 # print("closing connection")
