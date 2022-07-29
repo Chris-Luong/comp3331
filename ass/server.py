@@ -113,6 +113,7 @@ class ClientThread(Thread):
             global userInfo, numAttempts
             # Authentication
             message, userInfo, attemptCnt = authenticate(self, userInfo, attemptCnt, numAttempts)
+            # print(message)
             self.clientSocket.send(str.encode(message))
             if message == USERNAME_ERROR_MESSAGE or message == PASSWORD_ERROR_MESSAGE:
                 continue # do smthn?
@@ -120,56 +121,6 @@ class ClientThread(Thread):
                 self.clientSocket.close()
                 self.clientAlive = False
                 break
-
-
-            # # if userStatus is INACTIVE_USER:
-            # if usernameError:
-            #     print("[send] username error")
-            #     message = USERNAME_ERROR_MESSAGE
-            # elif passwordError:
-            #     print("[send] password error")
-            #     message = PASSWORD_ERROR_MESSAGE
-            #     # self.clientSocket.send(str.encode(message)) # user can still input after conn close
-
-            # username = self.clientSocket.recv(1024)
-            # username = username.decode()
-
-            # # check if username exists TODO: if user logged in already
-            # if username not in userInfo.keys():
-            #     usernameError = True
-            #     continue
-            # usernameError = False
-            # passwordError = False
-            # print('[send] password request')
-            # self.clientSocket.send(str.encode('Password: '))
-            # password = self.clientSocket.recv(1024)
-            # password = password.decode()
-
-            # # Check if password is valid TODO: if user is blocked
-            # if (password != userInfo[username]['password'] and
-            #     userInfo[username]['status'] != BLOCKED_USER):
-            #     # message = 'Invalid password!'
-            #     # self.clientSocket.send(str.encode(message))
-            #     passwordError = True
-            #     attemptCnt += 1
-            #     if attemptCnt >= numAttempts:
-            #         userInfo[username]['status'] = BLOCKED_USER
-            #         print("[send] user blocked. Closing connection")
-            #         self.clientSocket.send(str.encode(INVALID_PASSWORD_MESSAGE))
-            #         self.clientSocket.close()
-            #         self.clientAlive = False
-            #         break
-            #     else:
-            #         continue
-            # elif userInfo[username]['status'] is BLOCKED_USER: # cprrect ps but user blocked
-            #     print("[send] user blocked. Closing connection")
-            #     self.clientSocket.send(str.encode(BLOCKED_USER_MESSAGE))
-            #     self.clientSocket.close()
-            #     self.clientAlive = False
-            #     break
-            # userInfo[username]['status'] = ACTIVE_USER # add this to a field in userInfo?
-            # print(LOGGED_IN_USER_MESSAGE)
-            # self.clientSocket.send(str.encode("Welcome to TOOM!\n"))
 
 # if not isLogged:
 #     # sleep pauses everything so use a time add instead.
