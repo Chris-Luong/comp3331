@@ -57,16 +57,18 @@ session_dict = {}
 def authenticate(self, userInfo, attemptCnt, numAttempts):
     print(f"[send] username request")
     self.clientSocket.send(str.encode('Username: '))
+    print("[recv] username response")
     username = self.clientSocket.recv(1024).decode()
-    if username not in userInfo.keys():
+    if username not in userInfo.keys() or username == "":
         print("[send] username error")
         return USERNAME_ERROR_MESSAGE, userInfo, attemptCnt
 
     if attemptCnt == 0:
         blockedDelay = datetime.now() # initialise var
 
-    print('[send] password request')
+    print("[send] password request")
     self.clientSocket.send(str.encode('Password: '))
+    print("[recv] password response")
     password = self.clientSocket.recv(1024).decode()
 
     # unblock user after 10s
@@ -77,7 +79,7 @@ def authenticate(self, userInfo, attemptCnt, numAttempts):
 
     # check password and number of attempts, then send correct message
     if (password != userInfo[username]['password'] and
-        userInfo[username]['status'] != BLOCKED_USER):
+        userInfo[username]['status'] != BLOCKED_USER) or password == "":
         attemptCnt += 1
         if attemptCnt >= numAttempts:
             userInfo[username]['status'] = BLOCKED_USER
@@ -89,12 +91,13 @@ def authenticate(self, userInfo, attemptCnt, numAttempts):
             print("[send] password error")
             return PASSWORD_ERROR_MESSAGE, userInfo, attemptCnt
     elif userInfo[username]['status'] is BLOCKED_USER:
-        print("[send] user blocked. Closing connection")
+        print("[send] user still blocked. Closing connection")
         return BLOCKED_USER_MESSAGE, userInfo, attemptCnt
     
     userInfo[username]['status'] = ACTIVE_USER
     print(LOGGED_IN_USER_MESSAGE)
-    return WELCOME_MESSAGE, userInfo, attemptCnt
+    print("[send] command request")
+    return WELCOME_MESSAGE, userInfo, attemptCnt, username
 
 """
     Define multi-thread class for client
@@ -120,11 +123,16 @@ class ClientThread(Thread):
         # User is stored within the session dict
         global attemptCnt
         attemptCnt = 0
-
+        username = ''
         while self.clientAlive:
             global userInfo, numAttempts
+
             # Authentication
-            message, userInfo, attemptCnt = authenticate(self, userInfo, attemptCnt, numAttempts)
+            res = authenticate(self, userInfo, attemptCnt, numAttempts)
+            if len(res) == 3:
+                message, userInfo, attemptCnt = res
+            elif len(res) == 4:
+                message, userInfo, attemptCnt, username = res
             # print(message)
             self.clientSocket.send(str.encode(message))
             if message == USERNAME_ERROR_MESSAGE or message == PASSWORD_ERROR_MESSAGE:
@@ -133,16 +141,19 @@ class ClientThread(Thread):
                 self.clientSocket.close()
                 self.clientAlive = False
                 break
-
-# if not isLogged:
-#     # sleep pauses everything so use a time add instead.
-#     # https://www.programiz.com/python-programming/time
-#     # how to print one line but separated in code
-#     print("Your account is blocked due to multiple login failures. Please try again later")
-#     sleep(10)
-
-# x = datetime.now() + timedelta(seconds=10)
-# x += timedelta(seconds=3) # is this the same thing idk
+            while userInfo[username]['status'] == ACTIVE_USER:
+                print("[recv] comamnd response")
+                command = self.clientSocket.send(str.encode(COMMAND_INSTRUCTIONS))
+                if command == 'OUT':
+                    userInfo[username]['status'] = INACTIVE_USER
+                    # ------ update userlog.txt (remove line containing user, move subsequent lines up)
+                    # ------ active user sequence numbers updated accordingly
+                    print(f"{username} logout")
+                    self.clientSocket.send(str.encode(f"Bye, {username}!"))
+                    self.clientAlive = False
+                    break
+                else:
+                    break       
 
 print("\n===== Server is running =====")
 print("===== Waiting for connection request from clients...=====")

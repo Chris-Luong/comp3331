@@ -48,7 +48,7 @@ def loginUser(receivedMessage):
     elif receivedMessage == USERNAME_ERROR_MESSAGE or receivedMessage == PASSWORD_ERROR_MESSAGE:
         print(receivedMessage)
         return INACTIVE_USER
-    elif receivedMessage == LOGGED_IN_USER_MESSAGE:
+    elif receivedMessage == WELCOME_MESSAGE:
         return ACTIVE_USER
     else:
         userInput = input(receivedMessage)
@@ -69,16 +69,18 @@ while data != '': # this should be while connected
 
     if not isActive:
         result = loginUser(receivedMessage)
+        if result == INACTIVE_USER: # invalid username/password message received so get next msg from server (username: or password:)
+            continue    
+        elif result == BLOCKED_USER:
+            clientSocket.close()
+            break
+        elif result == ACTIVE_USER:
+            isActive = True
+            print('user is active')
     
-    if result == INACTIVE_USER: # invalid username/password message received so get next msg from server (username: or password:)
-        continue    
-    elif result == BLOCKED_USER:
-        break
-    elif result == ACTIVE_USER:
-        isActive = True
-        print('user is active')
-        clientSocket.close() # remove once below is implemented
-        break # proceeed to request for command in next line and deal with this
+    message = clientSocket.recv(1024).decode()
+    if message == COMMAND_INSTRUCTIONS:
+        print("do smthn")
 
 # close the socket
 # print("closing connection")

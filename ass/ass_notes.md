@@ -1,7 +1,7 @@
 
 # TODO
-- user blocking works, implement 10s delay (lets them conn and enter usrname and ps before displaying blocked message)
-- add if statement for invalid username in client
+- test for whitespace and newline in user credentials and other stuff (invalid stuff) ask tutor help
+- implement accepting commands in client side
 - Need to add following info into userlog.txt
     - Active user sequence number; timestamp; username; client IP address;
     client UDP server port number
@@ -40,17 +40,13 @@
 
 ## Timestamps
 
-Check the top of spec for format. Could have error message with the proper format
+Check 3.2 authentication for format. Could have error message with the proper format
 
 ## SRB
 
 - check if usename exists
 - User cannot create a room with themselves
     - error message if usernames are the same, check spec
-
-## OUT
-
-Could use a try and except for the OUT to test the case where the user exits terminal without logging out first. Will server just crash normally? 
 
 ## UPD
 
