@@ -38,6 +38,7 @@ for credential in f.readlines():
     details = {}
     details['password'] = credential.split()[1]
     details['status'] = INACTIVE_USER
+    details['blocked_until'] = datetime.now()
     userInfo[credential.split()[0]] = details
     # userInfo[credential.split()[0]] = credential.split()[1]
 
@@ -50,8 +51,8 @@ session_dict = {}
 """if active user will need to send message of welcome to TOOM"""
 
 """
-    parameters are self, userInfor dict and attempt count
-    returns constant string
+    parameters are self, userInfo dict, attempt count and number of attempts allowed
+    returns tuple (constant string, userInfo dict and attempt count)
 """
 def authenticate(self, userInfo, attemptCnt, numAttempts):
     print(f"[send] username request")
@@ -60,19 +61,30 @@ def authenticate(self, userInfo, attemptCnt, numAttempts):
     if username not in userInfo.keys():
         print("[send] username error")
         return USERNAME_ERROR_MESSAGE, userInfo, attemptCnt
-    
+
+    if attemptCnt == 0:
+        blockedDelay = datetime.now() # initialise var
+
     print('[send] password request')
     self.clientSocket.send(str.encode('Password: '))
     password = self.clientSocket.recv(1024).decode()
 
+    # unblock user after 10s
+    if (userInfo[username]['status'] == BLOCKED_USER and 
+        datetime.now() > userInfo[username]['blocked_until']):
+        userInfo[username]['status'] = INACTIVE_USER
+        attemptCnt = 0
+
+    # check password and number of attempts, then send correct message
     if (password != userInfo[username]['password'] and
         userInfo[username]['status'] != BLOCKED_USER):
         attemptCnt += 1
-        print (attemptCnt)
         if attemptCnt >= numAttempts:
             userInfo[username]['status'] = BLOCKED_USER
             print("[send] user blocked. Closing connection")
-            return INVALID_PASSWORD_MESSAGE, userInfo, attemptCnt
+            blockedDelay = datetime.now() + timedelta(seconds=10)
+            userInfo[username]['blocked_until'] = blockedDelay
+            return FIRST_BLOCKED_USER_MESSAGE, userInfo, attemptCnt
         else:
             print("[send] password error")
             return PASSWORD_ERROR_MESSAGE, userInfo, attemptCnt
@@ -117,7 +129,7 @@ class ClientThread(Thread):
             self.clientSocket.send(str.encode(message))
             if message == USERNAME_ERROR_MESSAGE or message == PASSWORD_ERROR_MESSAGE:
                 continue # do smthn?
-            elif message == INVALID_PASSWORD_MESSAGE or message == BLOCKED_USER_MESSAGE:
+            elif message == FIRST_BLOCKED_USER_MESSAGE or message == BLOCKED_USER_MESSAGE:
                 self.clientSocket.close()
                 self.clientAlive = False
                 break

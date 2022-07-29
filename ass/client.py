@@ -42,7 +42,7 @@ result = INACTIVE_USER
     Return type is constant integer
 """
 def loginUser(receivedMessage):
-    if receivedMessage == INVALID_PASSWORD_MESSAGE or receivedMessage == BLOCKED_USER_MESSAGE:
+    if receivedMessage == FIRST_BLOCKED_USER_MESSAGE or receivedMessage == BLOCKED_USER_MESSAGE:
         print(receivedMessage)
         return BLOCKED_USER
     elif receivedMessage == USERNAME_ERROR_MESSAGE or receivedMessage == PASSWORD_ERROR_MESSAGE:
