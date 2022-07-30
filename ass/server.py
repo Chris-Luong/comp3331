@@ -45,7 +45,7 @@ for credential in f.readlines():
 # attempts dictionary, or put this as the status in userInfo
 failed_attempt_IP = {} # or have a blockdUser dict
 
-# session dict
+# session dict for userlog.txt? See if required or if userInfo is enough
 session_dict = {}
 
 """if active user will need to send message of welcome to TOOM"""
@@ -57,8 +57,9 @@ session_dict = {}
 def authenticate(self, userInfo, attemptCnt, numAttempts):
     print(f"[send] username request")
     self.clientSocket.send(str.encode('Username: '))
-    print("[recv] username response")
+    # send_msg(self.clientSocket, 'Username: ')
     username = self.clientSocket.recv(1024).decode()
+    print("[recv] username response")
     if username not in userInfo.keys() or username == "":
         print("[send] username error")
         return USERNAME_ERROR_MESSAGE, userInfo, attemptCnt
@@ -68,8 +69,8 @@ def authenticate(self, userInfo, attemptCnt, numAttempts):
 
     print("[send] password request")
     self.clientSocket.send(str.encode('Password: '))
-    print("[recv] password response")
     password = self.clientSocket.recv(1024).decode()
+    print("[recv] password response")
 
     # unblock user after 10s
     if (userInfo[username]['status'] == BLOCKED_USER and 
@@ -96,7 +97,6 @@ def authenticate(self, userInfo, attemptCnt, numAttempts):
     
     userInfo[username]['status'] = ACTIVE_USER
     print(LOGGED_IN_USER_MESSAGE)
-    print("[send] command request")
     return WELCOME_MESSAGE, userInfo, attemptCnt, username
 
 """
@@ -119,41 +119,51 @@ class ClientThread(Thread):
         self.clientAlive = True
 
     def run(self):
-        # When user is not logged in, check if the cookie for this
-        # User is stored within the session dict
         global attemptCnt
         attemptCnt = 0
         username = ''
         while self.clientAlive:
             global userInfo, numAttempts
-
             # Authentication
             res = authenticate(self, userInfo, attemptCnt, numAttempts)
             if len(res) == 3:
                 message, userInfo, attemptCnt = res
             elif len(res) == 4:
                 message, userInfo, attemptCnt, username = res
-            # print(message)
-            self.clientSocket.send(str.encode(message))
+            print(f"MESSAGE IS {message}") # check if message is correct
+            self.clientSocket.send(message.encode())
             if message == USERNAME_ERROR_MESSAGE or message == PASSWORD_ERROR_MESSAGE:
                 continue # do smthn?
             elif message == FIRST_BLOCKED_USER_MESSAGE or message == BLOCKED_USER_MESSAGE:
-                self.clientSocket.close()
+                # self.clientSocket.close()
                 self.clientAlive = False
                 break
+            else:
+                print(f"[send] username: {username}")
+                self.clientSocket.send(str.encode(username))
+
             while userInfo[username]['status'] == ACTIVE_USER:
-                print("[recv] comamnd response")
-                command = self.clientSocket.send(str.encode(COMMAND_INSTRUCTIONS))
+                print("[send] comamnd request")
+                self.clientSocket.send(str.encode(COMMAND_INSTRUCTIONS))
+                command = self.clientSocket.recv(1024).decode()
+                print("[recv] command response")
+
                 if command == 'OUT':
                     userInfo[username]['status'] = INACTIVE_USER
                     # ------ update userlog.txt (remove line containing user, move subsequent lines up)
                     # ------ active user sequence numbers updated accordingly
                     print(f"{username} logout")
+                    print("[send] goodbye message")
                     self.clientSocket.send(str.encode(f"Bye, {username}!"))
+                    print(f"user status for {username} is {userInfo[username]['status']}")
+                    # client close connection after this
                     self.clientAlive = False
                     break
-                else:
-                    break       
+                else: # other commands
+                    print("[send] invalid command\n")
+                    print(command)
+                    self.clientSocket.send(str.encode("Error. Invalid command!"))
+                    continue
 
 print("\n===== Server is running =====")
 print("===== Waiting for connection request from clients...=====")

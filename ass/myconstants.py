@@ -1,15 +1,16 @@
 # States/Statuses
+ERROR = -1
 ACTIVE_USER = 0
 INACTIVE_USER = 1
 BLOCKED_USER = 2
 
 # Messages
-USERNAME_ERROR_MESSAGE = "Invalid username!\n"
-PASSWORD_ERROR_MESSAGE = "Invalid password!\n"
+USERNAME_ERROR_MESSAGE = "Invalid username!"
+PASSWORD_ERROR_MESSAGE = "Invalid password!"
 LOGGED_IN_USER_MESSAGE = "User logged in successfully!"
-WELCOME_MESSAGE = "Welcome to TOOM!\n"
+WELCOME_MESSAGE = "Welcome to TOOM!"
 
 INVALID_ATTEMPT_NUMBER_MESSAGE = "Invalid number of allowed failed consecutive attempt: "
 FIRST_BLOCKED_USER_MESSAGE = "Invalid password. Your account has been blocked. Please try again later"
 BLOCKED_USER_MESSAGE = "Your account has been blocked due to multiple login failures. Please try again later"
-COMMAND_INSTRUCTIONS = "Enter one of the following commands (BCM, ATU, SRB, SRM, RDM, OUT, UPD):"
+COMMAND_INSTRUCTIONS = "Enter one of the following commands (BCM, ATU, SRB, SRM, RDM, OUT, UPD): "
