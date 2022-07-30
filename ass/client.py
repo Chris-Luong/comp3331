@@ -37,7 +37,7 @@ clientSocket.connect(serverAddress)
 isActive = False
 justTurnedActive = False
 res = INACTIVE_USER
-
+commands = ['BCM', 'ATU', 'SRB', 'SRM', 'RDM', 'OUT', 'UDP']
 username = ''
 
 """
@@ -65,18 +65,14 @@ def loginUser(receivedMessage):
     else:
         return ERROR
 
-while True: # this should be while connected?
-    # send loggin_in var to the server
-
-
-    # receive response from the server
-    # 1024 is a suggested packet size, you can specify it as 2048 or others
-    # if not firstConnection:
-    #     data = clientSocket.recv(1024)
-    # else:
-    #     firstConnection = False
+while True:
+    """
+        Only one receiver as TCP is a stream-based (not message-based) protocol.
+        Some messages from server may be segmented across a few recv() calls so
+        having one receiver causes less issues than multiple receivers treating
+        send() calls as 1 message for 1 recv() call.
+    """
     receivedMessage = clientSocket.recv(1024).decode()
-    # receivedMessage = recv_msg(clientSocket)
 
     if not isActive:
         res = loginUser(receivedMessage)
@@ -97,14 +93,14 @@ while True: # this should be while connected?
 
     if receivedMessage == COMMAND_INSTRUCTIONS:
         userInput = input(receivedMessage)
+        if userInput not in commands:
+            print("Error. Invalid command!")
+            continue
         clientSocket.send(str.encode(userInput))
     elif receivedMessage == (f"Bye, {username}!"): # OUT
         print(receivedMessage)
         clientSocket.close()
         break
-    elif receivedMessage == "Error. Invalid command!":
-        print(receivedMessage)
-        continue
 
 # close the socket
 # print("closing connection")

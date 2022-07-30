@@ -155,15 +155,9 @@ class ClientThread(Thread):
                     print(f"{username} logout")
                     print("[send] goodbye message")
                     self.clientSocket.send(str.encode(f"Bye, {username}!"))
-                    print(f"user status for {username} is {userInfo[username]['status']}")
                     # client close connection after this
                     self.clientAlive = False
                     break
-                else: # other commands
-                    print("[send] invalid command\n")
-                    print(command)
-                    self.clientSocket.send(str.encode("Error. Invalid command!"))
-                    continue
 
 print("\n===== Server is running =====")
 print("===== Waiting for connection request from clients...=====")
