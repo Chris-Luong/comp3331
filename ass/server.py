@@ -11,6 +11,7 @@ from socket import *
 from threading import Thread
 import sys, select
 import json
+from time import strftime
 
 from myconstants import *
 
@@ -41,9 +42,9 @@ for credential in f.readlines():
     details['blocked_until'] = datetime.now()
     userInfo[credential.split()[0]] = details
     # userInfo[credential.split()[0]] = credential.split()[1]
+f.close()
 
-# attempts dictionary, or put this as the status in userInfo
-failed_attempt_IP = {} # or have a blockdUser dict
+activeUserCnt = 0
 
 # session dict for userlog.txt? See if required or if userInfo is enough
 session_dict = {}
@@ -54,7 +55,7 @@ session_dict = {}
     parameters are self, userInfo dict, attempt count and number of attempts allowed
     returns tuple (constant string, userInfo dict and attempt count)
 """
-def authenticate(self, userInfo, attemptCnt, numAttempts):
+def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
     print(f"[send] username request")
     self.clientSocket.send(str.encode('Username: '))
     # send_msg(self.clientSocket, 'Username: ')
@@ -80,7 +81,7 @@ def authenticate(self, userInfo, attemptCnt, numAttempts):
 
     # check password and number of attempts, then send correct message
     if (password != userInfo[username]['password'] and
-        userInfo[username]['status'] != BLOCKED_USER) or password == "":
+        userInfo[username]['status'] != BLOCKED_USER) or password == '':
         attemptCnt += 1
         if attemptCnt >= numAttempts:
             userInfo[username]['status'] = BLOCKED_USER
@@ -95,7 +96,16 @@ def authenticate(self, userInfo, attemptCnt, numAttempts):
         print("[send] user still blocked. Closing connection")
         return BLOCKED_USER_MESSAGE, userInfo, attemptCnt
     
+    # user is active if username and password are valid, add them to active user list
     userInfo[username]['status'] = ACTIVE_USER
+    print(f"seq no is {activeUserCnt}")
+    activeUserCnt += 1
+    print(f"seq no is {activeUserCnt}")
+    
+    timestamp = datetime.now().strftime("%d %b %Y %H:%M:%S") # e.g. 31 Jul 2022 14:14:!4
+    f = open("userlog.txt", "a")
+    f.write(f"{activeUserCnt}; {timestamp}; {username}\n")
+    f.close()
     print(LOGGED_IN_USER_MESSAGE)
     return WELCOME_MESSAGE, userInfo, attemptCnt, username
 
@@ -119,18 +129,18 @@ class ClientThread(Thread):
         self.clientAlive = True
 
     def run(self):
-        global attemptCnt
+        global attemptCnt, userInfo, numAttempts, activeUserCnt
         attemptCnt = 0
         username = ''
         while self.clientAlive:
-            global userInfo, numAttempts
             # Authentication
-            res = authenticate(self, userInfo, attemptCnt, numAttempts)
+            res = authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt)
             if len(res) == 3:
                 message, userInfo, attemptCnt = res
             elif len(res) == 4:
                 message, userInfo, attemptCnt, username = res
-            print(f"MESSAGE IS {message}") # check if message is correct
+            # print(f"MESSAGE IS {message}") # check if message is correct
+
             self.clientSocket.send(message.encode())
             if message == USERNAME_ERROR_MESSAGE or message == PASSWORD_ERROR_MESSAGE:
                 continue # do smthn?
@@ -143,7 +153,7 @@ class ClientThread(Thread):
                 self.clientSocket.send(str.encode(username))
 
             while userInfo[username]['status'] == ACTIVE_USER:
-                print("[send] comamnd request")
+                print("[send] command request")
                 self.clientSocket.send(str.encode(COMMAND_INSTRUCTIONS))
                 command = self.clientSocket.recv(1024).decode()
                 print("[recv] command response")
@@ -162,9 +172,12 @@ class ClientThread(Thread):
 print("\n===== Server is running =====")
 print("===== Waiting for connection request from clients...=====")
 
-
-while True:
-    serverSocket.listen()
-    clientSockt, clientAddress = serverSocket.accept()
-    clientThread = ClientThread(clientAddress, clientSockt)
-    clientThread.start()
+try:
+    while True:
+        serverSocket.listen()
+        clientSockt, clientAddress = serverSocket.accept()
+        clientThread = ClientThread(clientAddress, clientSockt)
+        clientThread.start()
+finally:
+    # delete userlog for clean start on next server run
+    os.remove("userlog.txt")

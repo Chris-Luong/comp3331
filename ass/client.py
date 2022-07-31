@@ -37,7 +37,7 @@ clientSocket.connect(serverAddress)
 isActive = False
 justTurnedActive = False
 res = INACTIVE_USER
-commands = ['BCM', 'ATU', 'SRB', 'SRM', 'RDM', 'OUT', 'UDP']
+commands = ['BCM', 'ATU', 'SRB', 'SRM', 'RDM', 'OUT', 'UPD']
 username = ''
 
 """
@@ -45,11 +45,13 @@ username = ''
     Return type is constant integer
 """
 def loginUser(receivedMessage):
-    if receivedMessage == 'Username: ':
+    while receivedMessage == 'Username: ':
         username = input(receivedMessage)
+        if username == '':
+            continue
         clientSocket.send(str.encode(username))
         return INACTIVE_USER
-    elif receivedMessage == 'Password: ':
+    if receivedMessage == 'Password: ':
         password = input(receivedMessage)
         clientSocket.send(str.encode(password))
         return INACTIVE_USER
@@ -77,8 +79,9 @@ while True:
     if not isActive:
         res = loginUser(receivedMessage)
 
-        if res == INACTIVE_USER or res == ERROR: # invalid username/password message received so get next msg from server (username: or password:)
-            continue    
+        if res == INACTIVE_USER or res == ERROR:
+            # invalid username/password message received so get next msg from server (username: or password:)
+            continue
         elif res == BLOCKED_USER:
             clientSocket.close() # test this since server is not closing conn now
             break
@@ -88,16 +91,19 @@ while True:
             continue
 
     if justTurnedActive:
-        username = receivedMessage
+        username = receivedMessage # maybe get the username from userlog instead since serv's username msg seems to stuff things up
+        print(username)
         justTurnedActive = False
+        continue
 
-    if receivedMessage == COMMAND_INSTRUCTIONS:
+    while receivedMessage == COMMAND_INSTRUCTIONS:
         userInput = input(receivedMessage)
         if userInput not in commands:
             print("Error. Invalid command!")
             continue
         clientSocket.send(str.encode(userInput))
-    elif receivedMessage == (f"Bye, {username}!"): # OUT
+        break
+    if receivedMessage == (f"Bye, {username}!"): # OUT
         print(receivedMessage)
         clientSocket.close()
         break
