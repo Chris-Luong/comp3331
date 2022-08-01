@@ -91,23 +91,40 @@ class ClientThread(Thread):
             while userInfo[username]['status'] == ACTIVE_USER:
                 print("[send] command request")
                 self.clientSocket.send(str.encode(S_COMMAND_INSTRUCTIONS))
-                print("before receiving input in server...")
-                command = self.clientSocket.recv(1024).decode()
-                print("after receiving input in server...")
+                received = self.clientSocket.recv(1024).decode()
                 print("[recv] command response")
+                print(received)
+
+                # KeyboardInterrupt
+                if received == '':
+                    print(f"{username} forced logout")
+                    activeUserCnt = logUserOut(username, userInfo)
+                    if activeUserCnt is None:
+                        activeUserCnt = 0
+                    else:
+                        activeUserCnt -= 1
+                    self.clientSocket.close()
+                    self.clientAlive = False
+                    break
+                receivedList = received.split()
+                command = receivedList[0]
 
                 if command == 'OUT':
-                    userInfo[username]['status'] = INACTIVE_USER
-                    removeUser(username)
-                    print("removed user")
-                    # ------ update userlog.txt (remove line containing user, move subsequent lines up)
-                    # ------ active user sequence numbers updated accordingly
+                    activeUserCnt = logUserOut(username, userInfo)
+                    if activeUserCnt is None:
+                        activeUserCnt = 0
+                    else:
+                        activeUserCnt -= 1
                     print(f"{username} logout")
                     print("[send] goodbye message")
                     self.clientSocket.send(str.encode(f"Bye, {username}!\0"))
                     # client close connection after this
                     self.clientAlive = False
                     break
+                elif command == 'BCM':
+                    message = receivedList[1]
+                    print(message)
+                    continue
 
 
 """
@@ -164,21 +181,18 @@ def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
     print(LOGGED_IN_USER_MESSAGE)
     return S_WELCOME_MESSAGE, userInfo, attemptCnt, username, activeUserCnt
 
-def removeUser(username):
+def logUserOut(username, userInfo):
+    userInfo[username]['status'] = INACTIVE_USER
     with open("userlog.txt", "r") as f:
         lines = f.readlines()
     with open("userlog.txt", "w") as f:
         i = 1
         for line in lines:
             if line.split()[5] != username:
-                print(f"first is {line.split()[0]}")
-                newLine = line.replace(line.split()[0], str(i))
-                print(f"first is now {line.split()[0]}")
-                
-                print(f"i is {i}")
+                newLine = line.replace(line.split()[0], str(i) + ";")
                 i +=1
-                print(f"i is now {i}")
                 f.write(newLine)
+                return i
 
 print("\n===== Server is running =====")
 print("===== Waiting for connection request from clients...=====")

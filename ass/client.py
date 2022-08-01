@@ -158,7 +158,7 @@ while True:
             print("Error. Invalid command!")
             continue
         elif inputList[0] == 'BCM':
-            print(inputList[0])
+            print(inputList[1])
         clientSocket.send(str.encode(userInput))
         break
     if recvMsg == (f"Bye, {username}!"): # OUT
