@@ -10,6 +10,7 @@ TODO:
     proper request calls
     peer to peer communication
 """
+import errno
 import os
 from socket import *
 import sys
@@ -32,6 +33,9 @@ clientSocket = socket(AF_INET, SOCK_STREAM)
 
 # build connection with the server and send message to it
 clientSocket.connect(serverAddress)
+# .recv() call will not prevent other functions from running if it receives nothing
+# this allows server-client communication to be stream-based
+clientSocket.setblocking(False)
 
 # data = clientSocket.recv(1024)
 # firstConnection = True
@@ -44,29 +48,37 @@ username = ''
 msgQueue = []
 
 """
+    Implements message receiving for non-blocking TCP connection
+    Parameter is the socket
+    Return type is string
+"""
+def recv_msg(sock):
+    try:
+        msgList = sock.recv(1024).decode().split('\0')
+        return msgList
+    except IOError as e:
+        # EAGAIN and EWOULDBLOCK are errors for no incoming data
+        if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
+            print(e)
+            exit(1)
+
+"""
+    Function for logging the user in
     Parameter is the message received from server
     Return type is constant integer
 """
 def loginUser(recvMsg):
-    print("entering username while loop")
     while recvMsg == 'Username: ':
-        print("requesting username in while loop")
         username = input(recvMsg)
         if username == '':
-            print("username is empty string")
             continue
-        print("sending username to server")
         clientSocket.send(str.encode(username))
         return INACTIVE_USER
-    print("entering if else statement block")
     if recvMsg == 'Password: ':
-        print("requesting password")
         password = input(recvMsg)
-        print("sending password")
         clientSocket.send(str.encode(password))
         return INACTIVE_USER
     elif recvMsg == USERNAME_ERROR_MESSAGE or recvMsg == PASSWORD_ERROR_MESSAGE:
-        print("printing recvMsg")
         print(recvMsg)
         return INACTIVE_USER
     elif recvMsg == FIRST_BLOCKED_USER_MESSAGE or recvMsg == BLOCKED_USER_MESSAGE:
@@ -76,6 +88,7 @@ def loginUser(recvMsg):
         print(recvMsg)
         return ACTIVE_USER
     else:
+        # received doesn't match expected formats for login process
         print(f"\'{recvMsg}\' => \'{USERNAME_ERROR_MESSAGE}\'")
         for i,s in enumerate(difflib.ndiff(recvMsg, USERNAME_ERROR_MESSAGE)):
             if s[0]==' ': continue
@@ -83,8 +96,27 @@ def loginUser(recvMsg):
                 print(u'Delete "{}" from position {}'.format(s[-1],i))
             elif s[0]=='+':
                 print(u'Add "{}" to position {}'.format(s[-1],i))
-        print(recvMsg)
         return ERROR
+
+"""
+    Code below is for reading the last line of a file, taken from
+    https://www.codingem.com/how-to-read-the-last-line-of-a-file-in-python/
+    Assumes format of userlog.txt is the one specified in the specifcation i.e.
+    Ativer user sequence number; timestamp; username
+    e.g. 1; 31 Jul 2022 17:52:15; hans
+    Returns string (username) if file format is correct
+"""
+def getUsername():
+    with open("userlog.txt", "rb") as file:
+        try: # go to last line
+            file.seek(-2, os.SEEK_END)
+            while file.read(1) != b'\n':
+                file.seek(-2, os.SEEK_CUR)
+        except OSError:
+            file.seek(0)
+        last_line = file.readline().decode()
+        # go to 6th string for username
+        return last_line.split()[5]
 
 while True:
     """
@@ -93,23 +125,19 @@ while True:
         having one receiver causes less issues than multiple receivers treating
         send() calls as 1 message for 1 recv() call.
     """
-    received = clientSocket.recv(1024).decode().split('\0')
+    received = recv_msg(clientSocket)
+    if received is None:
+        continue
     for r in received:
-        print("r is "+r)
         if r != '':
            msgQueue.append(r)
     recvMsg = msgQueue[0]
-    print("recvMsg is "+recvMsg)
-    for thing in msgQueue:
-        print("msgQueue is "+thing)
 
     if not isActive:
         # print("isActive is ", isActive)
         res = loginUser(recvMsg)
-        print("after loginUser function, result is ", res)
         if res == INACTIVE_USER or res == ERROR:
             # invalid username/password message received so get next msg from server (username: or password:)
-            print("message to be popped "+msgQueue[0])
             msgQueue.pop(0) # remove most recent message from queue
             continue
         elif res == BLOCKED_USER:
@@ -122,22 +150,7 @@ while True:
             continue
 
     if justTurnedActive:
-        """
-            Code below is for reading the last line of a file, taken from
-            https://www.codingem.com/how-to-read-the-last-line-of-a-file-in-python/
-            Assumes format of userlog.txt is the one specified in the specifcation i.e.
-            Ativer user sequence number; timestamp; username
-            e.g. 1; 31 Jul 2022 17:52:15; hans
-        """
-        with open("userlog.txt", "rb") as file:
-            try:
-                file.seek(-2, os.SEEK_END)
-                while file.read(1) != b'\n':
-                    file.seek(-2, os.SEEK_CUR)
-            except OSError:
-                file.seek(0)
-            last_line = file.readline().decode()
-            username = last_line.split()[5]
+        username = getUsername()
         justTurnedActive = False
 
     while recvMsg == COMMAND_INSTRUCTIONS:

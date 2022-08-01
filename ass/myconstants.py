@@ -4,7 +4,8 @@ ACTIVE_USER = 0
 INACTIVE_USER = 1
 BLOCKED_USER = 2
 
-# Messages
+# Messages sent from server
+# Ends with terminator '\0' as sometimes, multiple messages are recevied as 1 in clieny
 S_USERNAME_REQUEST = "Username: \0"
 S_PASSWORD_REQUEST = "Password: \0"
 S_USERNAME_ERROR_MESSAGE = "Invalid username!\0"
@@ -17,6 +18,7 @@ S_FIRST_BLOCKED_USER_MESSAGE = "Invalid password. Your account has been blocked.
 S_BLOCKED_USER_MESSAGE = "Your account has been blocked due to multiple login failures. Please try again later\0"
 S_COMMAND_INSTRUCTIONS = "Enter one of the following commands (BCM, ATU, SRB, SRM, RDM, OUT, UPD): \0"
 
+# Messages for client
 USERNAME_REQUEST = "Username: "
 PASSWORD_REQUEST = "Password: "
 USERNAME_ERROR_MESSAGE = "Invalid username!"
@@ -28,3 +30,5 @@ INVALID_ATTEMPT_NUMBER_MESSAGE = "Invalid number of allowed failed consecutive a
 FIRST_BLOCKED_USER_MESSAGE = "Invalid password. Your account has been blocked. Please try again later"
 BLOCKED_USER_MESSAGE = "Your account has been blocked due to multiple login failures. Please try again later"
 COMMAND_INSTRUCTIONS = "Enter one of the following commands (BCM, ATU, SRB, SRM, RDM, OUT, UPD): "
+
+SERVER_SHUTDOWN = "Orderly shutdown on server end"
