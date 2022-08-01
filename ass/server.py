@@ -98,6 +98,8 @@ class ClientThread(Thread):
 
                 if command == 'OUT':
                     userInfo[username]['status'] = INACTIVE_USER
+                    removeUser(username)
+                    print("removed user")
                     # ------ update userlog.txt (remove line containing user, move subsequent lines up)
                     # ------ active user sequence numbers updated accordingly
                     print(f"{username} logout")
@@ -162,6 +164,21 @@ def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
     print(LOGGED_IN_USER_MESSAGE)
     return S_WELCOME_MESSAGE, userInfo, attemptCnt, username, activeUserCnt
 
+def removeUser(username):
+    with open("userlog.txt", "r") as f:
+        lines = f.readlines()
+    with open("userlog.txt", "w") as f:
+        i = 1
+        for line in lines:
+            if line.split()[5] != username:
+                print(f"first is {line.split()[0]}")
+                newLine = line.replace(line.split()[0], str(i))
+                print(f"first is now {line.split()[0]}")
+                
+                print(f"i is {i}")
+                i +=1
+                print(f"i is now {i}")
+                f.write(newLine)
 
 print("\n===== Server is running =====")
 print("===== Waiting for connection request from clients...=====")

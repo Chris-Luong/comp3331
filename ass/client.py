@@ -37,14 +37,11 @@ clientSocket.connect(serverAddress)
 # this allows server-client communication to be stream-based
 clientSocket.setblocking(False)
 
-# data = clientSocket.recv(1024)
-# firstConnection = True
 isActive = False
 justTurnedActive = False
 res = INACTIVE_USER
-commands = ['BCM', 'ATU', 'SRB', 'SRM', 'RDM', 'OUT', 'UPD']
+COMMANDS = ['BCM', 'ATU', 'SRB', 'SRM', 'RDM', 'OUT', 'UPD']
 username = ''
-
 msgQueue = []
 
 """
@@ -96,15 +93,13 @@ def loginUser(recvMsg):
                 print(u'Delete "{}" from position {}'.format(s[-1],i))
             elif s[0]=='+':
                 print(u'Add "{}" to position {}'.format(s[-1],i))
-        return ERROR
+        exit(1)
 
 """
-    Code below is for reading the last line of a file, taken from
-    https://www.codingem.com/how-to-read-the-last-line-of-a-file-in-python/
     Assumes format of userlog.txt is the one specified in the specifcation i.e.
     Ativer user sequence number; timestamp; username
     e.g. 1; 31 Jul 2022 17:52:15; hans
-    Returns string (username) if file format is correct
+    Returns string (username)
 """
 def getUsername():
     with open("userlog.txt", "rb") as file:
@@ -131,17 +126,19 @@ while True:
     for r in received:
         if r != '':
            msgQueue.append(r)
-    recvMsg = msgQueue[0]
-
+    try:
+        recvMsg = msgQueue[0]
+    except Exception as e:
+        print(e)
+        exit(1)
     if not isActive:
         # print("isActive is ", isActive)
         res = loginUser(recvMsg)
-        if res == INACTIVE_USER or res == ERROR:
-            # invalid username/password message received so get next msg from server (username: or password:)
+        if res == INACTIVE_USER:
             msgQueue.pop(0) # remove most recent message from queue
             continue
         elif res == BLOCKED_USER:
-            clientSocket.close() # test this since server is not closing conn now
+            clientSocket.close()
             break
         elif res == ACTIVE_USER:
             isActive = True
@@ -155,9 +152,13 @@ while True:
 
     while recvMsg == COMMAND_INSTRUCTIONS:
         userInput = input(recvMsg)
-        if userInput not in commands:
+        inputList = userInput.split()
+        print(inputList)
+        if inputList[0] not in COMMANDS:
             print("Error. Invalid command!")
             continue
+        elif inputList[0] == 'BCM':
+            print(inputList[0])
         clientSocket.send(str.encode(userInput))
         break
     if recvMsg == (f"Bye, {username}!"): # OUT

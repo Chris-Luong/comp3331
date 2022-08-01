@@ -1,5 +1,5 @@
 # States/Statuses
-ERROR = -1
+ERROR = -1 #FIXME: may not need this
 ACTIVE_USER = 0
 INACTIVE_USER = 1
 BLOCKED_USER = 2
