@@ -48,6 +48,7 @@ activeUserCnt = 0
 # session dict for userlog.txt? See if required or if userInfo is enough
 session_dict = {}
 
+# TODO: implement parameters for UDP stuff (client IP addr and port no.)
 """
     Define multi-thread class for client
     This class would be used to define the instance for each connection from each client
@@ -122,8 +123,13 @@ class ClientThread(Thread):
                     self.clientAlive = False
                     break
                 elif command == 'BCM':
-                    message = receivedList[1]
+                    i = 1
+                    message = ""
+                    while i < len(receivedList):
+                        message += receivedList[i] + " "
+                    message -= " "
                     print(message)
+                    # will need to request for response? and then deal with this
                     continue
 
 

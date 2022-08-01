@@ -113,6 +113,8 @@ def getUsername():
         # go to 6th string for username
         return last_line.split()[5]
 
+
+# TODO: implement parameters for UDP stuff (client IP addr and port no.)
 while True:
     """
         Only one receiver as TCP is a stream-based (not message-based) protocol.
@@ -158,6 +160,9 @@ while True:
             print("Error. Invalid command!")
             continue
         elif inputList[0] == 'BCM':
+            if len(inputList) < 2:
+                print("Usage: BCM [message]")
+                continue
             print(inputList[1])
         clientSocket.send(str.encode(userInput))
         break
