@@ -34,80 +34,19 @@ serverSocket.bind(serverAddress)
 
 # read credentials file to create a dicionary for user information
 userInfo = {} # make this a list of dicts instead
-f = open('credentials.txt', 'r')
-for credential in f.readlines():
-    details = {}
-    details['password'] = credential.split()[1]
-    details['status'] = INACTIVE_USER
-    details['blocked_until'] = datetime.now()
-    userInfo[credential.split()[0]] = details
-    # userInfo[credential.split()[0]] = credential.split()[1]
-f.close()
+
+with open('credentials.txt', 'r') as file:
+    for credential in file.readlines():
+        details = {}
+        details['password'] = credential.split()[1]
+        details['status'] = INACTIVE_USER
+        details['blocked_until'] = datetime.now()
+        userInfo[credential.split()[0]] = details
 
 activeUserCnt = 0
 
 # session dict for userlog.txt? See if required or if userInfo is enough
 session_dict = {}
-
-"""if active user will need to send message of welcome to TOOM"""
-
-"""
-    parameters are self, userInfo dict, attempt count and number of attempts allowed
-    returns tuple (constant string, userInfo dict and attempt count)
-"""
-def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
-    print(f"[send] username request")
-    self.clientSocket.send(str.encode('Username: '))
-    # send_msg(self.clientSocket, 'Username: ')
-    username = self.clientSocket.recv(1024).decode()
-    print("[recv] username response")
-    if username not in userInfo.keys() or username == "":
-        print("[send] username error")
-        return USERNAME_ERROR_MESSAGE, userInfo, attemptCnt
-
-    if attemptCnt == 0:
-        blockedDelay = datetime.now() # initialise var
-
-    print("[send] password request")
-    self.clientSocket.send(str.encode('Password: '))
-    password = self.clientSocket.recv(1024).decode()
-    print("[recv] password response")
-
-    # unblock user after 10s
-    if (userInfo[username]['status'] == BLOCKED_USER and 
-        datetime.now() > userInfo[username]['blocked_until']):
-        userInfo[username]['status'] = INACTIVE_USER
-        attemptCnt = 0
-
-    # check password and number of attempts, then send correct message
-    if (password != userInfo[username]['password'] and
-        userInfo[username]['status'] != BLOCKED_USER) or password == '':
-        attemptCnt += 1
-        if attemptCnt >= numAttempts:
-            userInfo[username]['status'] = BLOCKED_USER
-            print("[send] user blocked. Closing connection")
-            blockedDelay = datetime.now() + timedelta(seconds=10)
-            userInfo[username]['blocked_until'] = blockedDelay
-            return FIRST_BLOCKED_USER_MESSAGE, userInfo, attemptCnt
-        else:
-            print("[send] password error")
-            return PASSWORD_ERROR_MESSAGE, userInfo, attemptCnt
-    elif userInfo[username]['status'] is BLOCKED_USER:
-        print("[send] user still blocked. Closing connection")
-        return BLOCKED_USER_MESSAGE, userInfo, attemptCnt
-    
-    # user is active if username and password are valid, add them to active user list
-    userInfo[username]['status'] = ACTIVE_USER
-    print(f"seq no is {activeUserCnt}")
-    activeUserCnt += 1
-    print(f"seq no is {activeUserCnt}")
-    
-    timestamp = datetime.now().strftime("%d %b %Y %H:%M:%S") # e.g. 31 Jul 2022 14:14:!4
-    f = open("userlog.txt", "a")
-    f.write(f"{activeUserCnt}; {timestamp}; {username}\n")
-    f.close()
-    print(LOGGED_IN_USER_MESSAGE)
-    return WELCOME_MESSAGE, userInfo, attemptCnt, username
 
 """
     Define multi-thread class for client
@@ -137,25 +76,24 @@ class ClientThread(Thread):
             res = authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt)
             if len(res) == 3:
                 message, userInfo, attemptCnt = res
-            elif len(res) == 4:
-                message, userInfo, attemptCnt, username = res
-            # print(f"MESSAGE IS {message}") # check if message is correct
+            elif len(res) == 5:
+                message, userInfo, attemptCnt, username, activeUserCnt = res
+            print(f"MESSAGE IS {message}") # check if message is correct
 
             self.clientSocket.send(message.encode())
-            if message == USERNAME_ERROR_MESSAGE or message == PASSWORD_ERROR_MESSAGE:
+            if message == S_USERNAME_ERROR_MESSAGE or message == S_PASSWORD_ERROR_MESSAGE:
                 continue # do smthn?
-            elif message == FIRST_BLOCKED_USER_MESSAGE or message == BLOCKED_USER_MESSAGE:
+            elif message == S_FIRST_BLOCKED_USER_MESSAGE or message == S_BLOCKED_USER_MESSAGE:
                 # self.clientSocket.close()
                 self.clientAlive = False
                 break
-            else:
-                print(f"[send] username: {username}")
-                self.clientSocket.send(str.encode(username))
 
             while userInfo[username]['status'] == ACTIVE_USER:
                 print("[send] command request")
-                self.clientSocket.send(str.encode(COMMAND_INSTRUCTIONS))
+                self.clientSocket.send(str.encode(S_COMMAND_INSTRUCTIONS))
+                print("before receiving input in server...")
                 command = self.clientSocket.recv(1024).decode()
+                print("after receiving input in server...")
                 print("[recv] command response")
 
                 if command == 'OUT':
@@ -164,10 +102,66 @@ class ClientThread(Thread):
                     # ------ active user sequence numbers updated accordingly
                     print(f"{username} logout")
                     print("[send] goodbye message")
-                    self.clientSocket.send(str.encode(f"Bye, {username}!"))
+                    self.clientSocket.send(str.encode(f"Bye, {username}!\0"))
                     # client close connection after this
                     self.clientAlive = False
                     break
+
+
+"""
+    parameters are self, userInfo dict, attempt count and number of attempts allowed
+    returns tuple (constant string, userInfo dict and attempt count)
+"""
+def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
+    print("[send] username request")
+    self.clientSocket.send(str.encode(S_USERNAME_REQUEST))
+    username = self.clientSocket.recv(1024).decode()
+    print("[recv] username response")
+    if username not in userInfo.keys() or username == "":
+        print("[send] username error")
+        return S_USERNAME_ERROR_MESSAGE, userInfo, attemptCnt
+
+    if attemptCnt == 0:
+        blockedDelay = datetime.now() # initialise var
+
+    print("[send] password request")
+    self.clientSocket.send(str.encode(S_PASSWORD_REQUEST))
+    password = self.clientSocket.recv(1024).decode()
+    print("[recv] password response")
+
+    # unblock user after 10s
+    if (userInfo[username]['status'] == BLOCKED_USER and 
+        datetime.now() > userInfo[username]['blocked_until']):
+        userInfo[username]['status'] = INACTIVE_USER
+        attemptCnt = 0
+
+    # check password and number of attempts, then send correct message
+    if (password != userInfo[username]['password'] and
+        userInfo[username]['status'] != BLOCKED_USER) or password == '':
+        attemptCnt += 1
+        if attemptCnt >= numAttempts:
+            userInfo[username]['status'] = BLOCKED_USER
+            print("[send] user blocked. Closing connection")
+            blockedDelay = datetime.now() + timedelta(seconds=10)
+            userInfo[username]['blocked_until'] = blockedDelay
+            return S_FIRST_BLOCKED_USER_MESSAGE, userInfo, attemptCnt
+        else:
+            print("[send] password error")
+            return S_PASSWORD_ERROR_MESSAGE, userInfo, attemptCnt
+    elif userInfo[username]['status'] is BLOCKED_USER:
+        print("[send] user still blocked. Closing connection")
+        return S_BLOCKED_USER_MESSAGE, userInfo, attemptCnt
+    
+    # user is active if username and password are valid, add them to active user list
+    userInfo[username]['status'] = ACTIVE_USER
+    activeUserCnt += 1
+    
+    timestamp = datetime.now().strftime("%d %b %Y %H:%M:%S") # e.g. 31 Jul 2022 14:14:!4
+    with open("userlog.txt", 'a') as file:
+        file.write(f"{activeUserCnt}; {timestamp}; {username}\n")
+    print(LOGGED_IN_USER_MESSAGE)
+    return S_WELCOME_MESSAGE, userInfo, attemptCnt, username, activeUserCnt
+
 
 print("\n===== Server is running =====")
 print("===== Waiting for connection request from clients...=====")

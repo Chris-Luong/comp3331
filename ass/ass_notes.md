@@ -8,13 +8,17 @@
     - e.g. 1; 1 Jun 2022 21:30:04; Yoda; 129.64.1.11; 6666
 - active users and log off functionality
     - (need to write to a **userlog.txt** file)
-- report.pdf: attribute multithreading to WebCMS sample code
 - single user login
 - blocking for unsuccessful attempts (based on number and time)
 - multiple clients logged in
 - broadcast, read and room functionality
     - (write to **messagelog.txt**, use sys and os to create file if it doesn't exist)
 
+# Report
+
+- attribute multithreading to WebCMS sample code
+- attribute reading last line in file to https://www.codingem.com/how-to-read-the-last-line-of-a-file-in-python/
+- implementation of '\0' versions of messages is inefficient
 
 # Testing
     Add some newlines to the bottom of credentials.txt to see if it crashes
