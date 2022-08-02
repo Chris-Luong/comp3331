@@ -7,26 +7,28 @@
 
 """
 TODO:
-    proper request calls
-    peer to peer communication
+    receive IP addr and port number as parameters: wherever needed
 """
-import errno
 import os
 from socket import *
 import sys
 import difflib
 
 from myconstants import *
+from helper import *
 
 # Server would be running on the same host as Client
-if len(sys.argv) != 3:
-    print("\n===== Error usage, python3 client.py SERVER_IP SERVER_PORT ======\n")
+if len(sys.argv) != 4:
+    print("\n===== Error usage, python3 client.py SERVER_IP SERVER_PORT CLIENT_UDP_PORT ======\n")
     exit(0)
 
 
 serverHost = sys.argv[1]
 serverPort = int(sys.argv[2])
 serverAddress = (serverHost, serverPort)
+
+ipAddress = gethostbyname(gethostname())
+UDPport = int(sys.argv[3])
 
 # define a socket for the client side, it would be used to communicate with the server
 clientSocket = socket(AF_INET, SOCK_STREAM)
@@ -39,25 +41,12 @@ clientSocket.setblocking(False)
 
 isActive = False
 justTurnedActive = False
+justConnected = True
 res = INACTIVE_USER
 COMMANDS = ['BCM', 'ATU', 'SRB', 'SRM', 'RDM', 'OUT', 'UPD']
 username = ''
 msgQueue = []
 
-"""
-    Implements message receiving for non-blocking TCP connection
-    Parameter is the socket
-    Return type is string
-"""
-def recv_msg(sock):
-    try:
-        msgList = sock.recv(1024).decode().split('\0')
-        return msgList
-    except IOError as e:
-        # EAGAIN and EWOULDBLOCK are errors for no incoming data
-        if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
-            print(e)
-            exit(1)
 
 """
     Function for logging the user in
@@ -111,7 +100,7 @@ def getUsername():
             file.seek(0)
         last_line = file.readline().decode()
         # go to 6th string for username
-        return last_line.split()[5]
+        return last_line.split()[5].strip(';')
 
 
 # TODO: implement parameters for UDP stuff (client IP addr and port no.)
@@ -122,6 +111,10 @@ while True:
         having one receiver causes less issues than multiple receivers treating
         send() calls as 1 message for 1 recv() call.
     """
+    if justConnected:
+        clientSocket.send(str(UDPport).encode())        
+        justConnected = False
+    # Listen to server socket and put messages into a queue (buffer)
     received = recv_msg(clientSocket)
     if received is None:
         continue
@@ -133,6 +126,7 @@ while True:
     except Exception as e:
         print(e)
         exit(1)
+
     if not isActive:
         # print("isActive is ", isActive)
         res = loginUser(recvMsg)
@@ -163,13 +157,13 @@ while True:
             if len(inputList) < 2:
                 print("Usage: BCM [message]")
                 continue
-            print(inputList[1])
+            print(inputList)
         clientSocket.send(str.encode(userInput))
         break
     if recvMsg == (f"Bye, {username}!"): # OUT
-        print(recvMsg)
+        print("recvmsg is "+recvMsg)
         clientSocket.close()
-        break
+        exit(0)
 
     msgQueue.pop(0)
 
