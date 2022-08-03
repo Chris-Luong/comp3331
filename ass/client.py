@@ -125,6 +125,7 @@ while True:
         recvMsg = msgQueue[0]
     except Exception as e:
         print(e)
+        print("exiting due to exception")
         exit(1)
 
     if not isActive:
@@ -146,10 +147,16 @@ while True:
         username = getUsername()
         justTurnedActive = False
 
+    # print("before finding message if statement: ",recvMsg)
+    # print("msgQueue at this point is ", msgQueue)
+    if recvMsg.find("Broadcast message,") != -1:
+        print(recvMsg)
+        msgQueue.pop(0)
+        continue
+        
     while recvMsg == COMMAND_INSTRUCTIONS:
         userInput = input(recvMsg)
         inputList = userInput.split()
-        print(inputList)
         if inputList[0] not in COMMANDS:
             print("Error. Invalid command!")
             continue
@@ -157,11 +164,11 @@ while True:
             if len(inputList) < 2:
                 print("Usage: BCM [message]")
                 continue
-            print(inputList)
+            # print(inputList)
         clientSocket.send(str.encode(userInput))
-        break
+        break # need to get confirmation message before receiving next command
     if recvMsg == (f"Bye, {username}!"): # OUT
-        print("recvmsg is "+recvMsg)
+        print(recvMsg)
         clientSocket.close()
         exit(0)
 

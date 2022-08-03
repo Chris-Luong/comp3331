@@ -52,9 +52,7 @@ with open('credentials.txt', 'r') as file:
         userInfo[credential.split()[0]] = details
 
 activeUserCnt = 0
-
-# session dict for userlog.txt? See if required or if userInfo is enough
-session_dict = {}
+messageCnt = 1
 
 # TODO: implement parameters for UDP stuff (client IP addr and port no.)
 """
@@ -77,7 +75,7 @@ class ClientThread(Thread):
         self.clientAlive = True
 
     def run(self):
-        global attemptCnt, userInfo, numAttempts, activeUserCnt, clientUDPport
+        global attemptCnt, userInfo, numAttempts, activeUserCnt, clientUDPport, messageCnt
         clientUDPport = self.clientSocket.recv(1024).decode()
         attemptCnt = 0
         username = ''
@@ -135,15 +133,15 @@ class ClientThread(Thread):
                 elif command == 'BCM':
                     i = 1
                     message = ""
-                    print(len(receivedList))
-                    while i <= len(receivedList):
-                        print("in while loop")
-                        print("message is "+message)
+                    while i < len(receivedList):
                         message += receivedList[i] + " "
-                    print("remove one space in next line before printing message")
+                        i += 1
                     message = message[:-1]
-                    print(message)
-                    # will need to request for response? and then deal with this
+                    loggedMessage, messageCnt = logMessage(messageCnt, datetime.now(), username, message)
+                    loggedMessage = loggedMessage.split(';')
+                    confirmationMessage = \
+                    f"Broadcast message, #{loggedMessage[0]} broadcast at {loggedMessage[1]}."
+                    self.clientSocket.send(str.encode(confirmationMessage + "\0"))
                     continue
                 elif command == 'ATU':
                     print("print active users")
@@ -219,13 +217,24 @@ def logUserOut(username, userInfo):
             return None
         i = 1
         for line in lines:
-            print("line before if statement: ", line)
             if line.split()[5].strip(';') != username:
-                print(line)
                 newLine = line.replace(line.split()[0], str(i) + ";")
                 i +=1
                 f.write(newLine)
         return i
+
+"""
+    Creates a message log according to the specified format and appends to messagelog.txt
+    Parameters: message number, timestamp, username, message
+    Returns the string that is appended
+"""
+def logMessage(messageNumber, timestamp, username, message):
+    timestamp = timestamp.strftime("%d %b %Y %H:%M:%S")
+    result = f"{messageNumber}; {timestamp}; {username}; {message}\n"
+    with open("messagelog.txt", 'a') as file:
+        file.write(result)
+    messageNumber += 1
+    return result, messageNumber
 
 print(f"\n===== Server is running on {serverAddress[0]}:{serverAddress[1]} =====")
 print("===== Waiting for connection request from clients...=====")
@@ -237,9 +246,9 @@ try:
         clientThread = ClientThread(clientAddress, clientSockt)
         clientThread.start()
 finally:
-    # delete userlog for clean start on next server run
-    try:
+    # delete created files for clean start on next server run
+    if os.path.exists("userlog.txt"):
         os.remove("userlog.txt")
-    except:
-        serverSocket.close()
+    if os.path.exists("messagelog.txt"):
+        os.remove("messagelog.txt")
     serverSocket.close()
