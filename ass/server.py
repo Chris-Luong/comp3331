@@ -16,6 +16,7 @@ from threading import Thread
 import sys, select
 import json
 from time import sleep, strftime
+from typing import final
 
 from myconstants import *
 from helper import *
@@ -128,7 +129,7 @@ class ClientThread(Thread):
                         activeUserCnt -= 1
                     print(f"{username} logout")
                     self.clientSocket.send(str.encode(f"Bye, {username}!\0"))
-                    sleep(0.5)
+                    sleep(0.5) # pause program so client can receive msg before socket is closed
                     self.clientAlive = False
                     break
                 elif command == 'BCM':
@@ -209,7 +210,6 @@ def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
     return S_WELCOME_MESSAGE, userInfo, attemptCnt, username, activeUserCnt
 
 def logUserOut(username, userInfo):
-    print("entered logout func")
     userInfo[username]['status'] = INACTIVE_USER
     with open("userlog.txt", "r") as f:
         lines = f.readlines()
@@ -219,13 +219,15 @@ def logUserOut(username, userInfo):
             return None
         i = 1
         for line in lines:
-            if line.split()[5] != username:
+            print("line before if statement: ", line)
+            if line.split()[5].strip(';') != username:
+                print(line)
                 newLine = line.replace(line.split()[0], str(i) + ";")
                 i +=1
                 f.write(newLine)
-                return i
+        return i
 
-print("\n===== Server is running =====")
+print(f"\n===== Server is running on {serverAddress[0]}:{serverAddress[1]} =====")
 print("===== Waiting for connection request from clients...=====")
 
 try:
@@ -236,5 +238,8 @@ try:
         clientThread.start()
 finally:
     # delete userlog for clean start on next server run
-    os.remove("userlog.txt")
+    try:
+        os.remove("userlog.txt")
+    except:
+        serverSocket.close()
     serverSocket.close()
