@@ -92,16 +92,16 @@ class ClientThread(Thread):
             print(f"MESSAGE IS {message}") #FIXME: REMOVE-------------------------------------------------
 
             # retry authentication until user is blocked
-            self.clientSocket.send(message.encode())
-            if message == S_USERNAME_ERROR_MESSAGE or message == S_PASSWORD_ERROR_MESSAGE:
+            self.clientSocket.send(str.encode(message + '\0'))
+            if message == USERNAME_ERROR_MESSAGE or message == PASSWORD_ERROR_MESSAGE:
                 continue
-            elif message == S_FIRST_BLOCKED_USER_MESSAGE or message == S_BLOCKED_USER_MESSAGE:
+            elif message == FIRST_BLOCKED_USER_MESSAGE or message == BLOCKED_USER_MESSAGE:
                 self.clientAlive = False
                 break
 
             while userInfo[username]['status'] == ACTIVE_USER:
                 print("[send] command request") #FIXME: REMOVE---------------------------------------------
-                self.clientSocket.send(str.encode(S_COMMAND_INSTRUCTIONS))
+                self.clientSocket.send(str.encode(COMMAND_INSTRUCTIONS + '\0'))
                 received = self.clientSocket.recv(1024).decode()
                 print("[recv] command response") #FIXME: REMOVE--------------------------------------------
                 print(received)
@@ -142,6 +142,7 @@ class ClientThread(Thread):
                         i += 1
                     message = message[:-1]
                     timestamp = datetime.now()
+                    timestamp = timestamp.strftime("%-d %b %Y %H:%M:%S")
 
                     print(f"{username} broadcasted BCM #{messageCnt} \"{message}\" at {timestamp}.")
 
@@ -150,11 +151,12 @@ class ClientThread(Thread):
                     confirmationMessage = \
                     f"Broadcast message, #{loggedMessage[0]} broadcast at {loggedMessage[1]}."
 
-                    self.clientSocket.send(str.encode(confirmationMessage + "\0"))
+                    self.clientSocket.send(str.encode(confirmationMessage + '\0'))
                     continue
                 elif command == 'ATU':
                     print("print active users")
                     users = retrieveActiveUsers(username)
+                    self.clientSocket.send(str.encode(users + '\0'))
                     continue
                 elif command == 'SRB': # create SR_ID_messagelog.txt for each room (SR_ID = room id)
                     print("broadcast message to separate room")
@@ -174,15 +176,15 @@ class ClientThread(Thread):
 """
 def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
     print("[send] username request") #FIXME: REMOVE-------------------------------------------------------
-    self.clientSocket.send(str.encode(S_USERNAME_REQUEST))
+    self.clientSocket.send(str.encode(USERNAME_REQUEST + '\0'))
     username = self.clientSocket.recv(1024).decode()
     print("[recv] username response") #FIXME: REMOVE------------------------------------------------------
     if username not in userInfo.keys() or username == "":
         print("[send] username error") #FIXME: REMOVE-----------------------------------------------------
-        return S_USERNAME_ERROR_MESSAGE, userInfo, attemptCnt
+        return USERNAME_ERROR_MESSAGE, userInfo, attemptCnt
 
     print("[send] password request") #FIXME: REMOVE-----------------------------------------------------
-    self.clientSocket.send(str.encode(S_PASSWORD_REQUEST))
+    self.clientSocket.send(str.encode(PASSWORD_REQUEST + '\0'))
     password = self.clientSocket.recv(1024).decode()
     print("[recv] password response") #FIXME: REMOVE-----------------------------------------------------
 
@@ -200,23 +202,23 @@ def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
             userInfo[username]['status'] = BLOCKED_USER
             print("[send] user blocked. Closing connection")
             userInfo[username]['blocked_until'] = datetime.now() + timedelta(seconds=10)
-            return S_FIRST_BLOCKED_USER_MESSAGE, userInfo, attemptCnt
+            return FIRST_BLOCKED_USER_MESSAGE, userInfo, attemptCnt
         else:
             print("[send] password error") #FIXME: REMOVE-------------------------------------------------
-            return S_PASSWORD_ERROR_MESSAGE, userInfo, attemptCnt
+            return PASSWORD_ERROR_MESSAGE, userInfo, attemptCnt
     elif userInfo[username]['status'] is BLOCKED_USER:
         print("[send] user still blocked. Closing connection") #FIXME: REMOVE-----------------------------
-        return S_BLOCKED_USER_MESSAGE, userInfo, attemptCnt
+        return BLOCKED_USER_MESSAGE, userInfo, attemptCnt
     
     # user is active if username and password are valid, add them to active user list (userlog.txt)
     userInfo[username]['status'] = ACTIVE_USER
     activeUserCnt += 1
     
-    timestamp = datetime.now().strftime("%d %b %Y %H:%M:%S") # e.g. 31 Jul 2022 14:14:!4
+    timestamp = datetime.now().strftime("%-d %b %Y %H:%M:%S") # e.g. 31 Jul 2022 14:14:!4
     with open("userlog.txt", 'a') as file:
         file.write(f"{activeUserCnt}; {timestamp}; {username}; {self.clientAddress[0]}; {clientUDPport}\n")
     print(LOGGED_IN_USER_MESSAGE)
-    return S_WELCOME_MESSAGE, userInfo, attemptCnt, username, activeUserCnt
+    return WELCOME_MESSAGE, userInfo, attemptCnt, username, activeUserCnt
 
 
 """
@@ -234,10 +236,11 @@ def logUserOut(username, userInfo):
             return None
         i = 1
         for line in lines:
-            if line.split()[5].strip(';') != username:
-                newLine = line.replace(line.split()[0], str(i) + ";")
-                i +=1
-                f.write(newLine)
+            if line.split()[5].strip(';') == username:
+                continue
+            newLine = line.replace(line.split()[0], str(i) + ";")
+            i +=1
+            f.write(newLine)
         return i
 
 
@@ -247,7 +250,6 @@ def logUserOut(username, userInfo):
     Returns the string that is appended
 """
 def logMessage(messageNumber, timestamp, username, message):
-    timestamp = timestamp.strftime("%d %b %Y %H:%M:%S")
     result = f"{messageNumber}; {timestamp}; {username}; {message}\n"
     with open("messagelog.txt", 'a') as file:
         file.write(result)
@@ -256,17 +258,27 @@ def logMessage(messageNumber, timestamp, username, message):
 
 
 """
-    Retrieves all active users from userlog.txt excluding the user that requested
+    Retrieves all active users from userlog.txt, excluding the user that requested
     Parameters: username
-    Returns string of users
+    Returns string of users, or the message "no other active user"
 """
 def retrieveActiveUsers(username):
     result = ""
-    with open("messagelog.txt", 'r') as file:
+    with open("userlog.txt", 'r') as file:
         lines = file.readlines()
         for line in lines:
-            if line.split()[5].strip(';') != username:
-                result += line
+            if line.split()[5].strip(';') == username:
+                continue
+            newLine = line.replace(';', '')
+            lineElements = newLine.split()
+            
+            ATUmessage = f"{lineElements[5]}, active since {lineElements[1]} {lineElements[2]} "
+            ATUmessage += f"{lineElements[3]} {lineElements[4]} on {lineElements[6]}:{lineElements[7]}.\n"
+            result += ATUmessage
+    
+    if result == "":
+        return ATU_STATUS_ALONE
+    result = result[:-1] # remove the last '\n'
     return result
 
 

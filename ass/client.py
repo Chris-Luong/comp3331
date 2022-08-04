@@ -152,7 +152,7 @@ while True:
         msgQueue.pop(0)
         continue
     
-    if recvMsg.find("active since") != -1:
+    if recvMsg.find("active since") != -1 or recvMsg == ATU_STATUS_ALONE:
         print(recvMsg)
         msgQueue.pop(0)
         continue
@@ -160,31 +160,35 @@ while True:
     while recvMsg == COMMAND_INSTRUCTIONS:
         userInput = input(recvMsg)
         inputList = userInput.split()
-        if inputList[0] not in COMMANDS:
+        command = inputList[0]
+
+        if command not in COMMANDS:
             print("Error. Invalid command!")
             continue
-        elif inputList[0] == 'BCM':
+        elif command == 'BCM':
             if len(inputList) < 2:
                 print("Usage: BCM [message]")
                 continue
-        elif inputList[0] == 'ATU':
-                break
-        elif inputList[0] == 'SRB':
+        elif command == 'SRB':
             if len(inputList) < 2:
                 print("Usage: SRB [username1] [username2] ... A minimum of 1 username is required")
                 continue
-        elif inputList[0] == 'SRM':
+        elif command == 'SRM':
             if len(inputList) < 3:
                 print("Usage: SRM [roomID] [message] ...")
                 continue
-        elif inputList[0] == 'RDM':
+        elif command == 'RDM':
             if len(inputList) < 3:
                 print("Usage: RDM [messageType] [timestamp] ...")
                 continue
-        
+        elif command == 'ATU' or command == 'OUT':
+            # don't care if user adds arguments after these commands, just issue the command itself
+            clientSocket.send(str.encode(command))
+            break
+
         clientSocket.send(str.encode(userInput))
         
-        # need to get a message before receiving next command
+        # retrieve message from server before receiving next command
         break
     if recvMsg == (f"Bye, {username}!"): # OUT
         print(recvMsg)

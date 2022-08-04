@@ -14,3 +14,4 @@ def recv_msg(sock):
         if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
             print(e)
             exit(1)
+        return None
