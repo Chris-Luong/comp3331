@@ -20,6 +20,8 @@ COMMAND_INSTRUCTIONS = "Enter one of the following commands (BCM, ATU, SRB, SRM,
 SRB_NOT_EXISTENT_USER_MESSAGE = "Error:: this user does not exist: "
 SRB_INACTIVE_USER_MESSAGE = "Error:: this user is offline: "
 SRB_YOURSELF_USER_MESSAGE = "Error:: you cannot create a room with yourself "
+SRM_NON_EXISTENT_ROOM = "The separate room does not exist"
+SRM_INVALID_ROOM = "You are not in this separate room chat"
 
 # Mesages for commands
 ATU_STATUS_ALONE = "No other active user"
