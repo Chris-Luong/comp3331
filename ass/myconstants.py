@@ -17,6 +17,9 @@ INVALID_ATTEMPT_NUMBER_MESSAGE = "Invalid number of allowed failed consecutive a
 FIRST_BLOCKED_USER_MESSAGE = "Invalid password. Your account has been blocked. Please try again later"
 BLOCKED_USER_MESSAGE = "Your account has been blocked due to multiple login failures. Please try again later"
 COMMAND_INSTRUCTIONS = "Enter one of the following commands (BCM, ATU, SRB, SRM, RDM, OUT, UPD): "
+SRB_NOT_EXISTENT_USER_MESSAGE = "Error: this user does not exist: "
+SRB_INACTIVE_USER_MESSAGE = "Error: this user is offline: "
+SRB_YOURSELF_USER_MESSAGE = "Error: you cannot create a room with yourself "
 
 # Mesages for commands
 ATU_STATUS_ALONE = "No other active user"

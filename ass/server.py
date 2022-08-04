@@ -31,7 +31,8 @@ elif not sys.argv[2].isalnum() or int(sys.argv[2]) > 5 or int(sys.argv[2]) < 1:
         ". The valid value of argument number is an integer between 1 and 5.")
     exit(0)
 
-serverHost = gethostbyname(gethostname())
+# serverHost = gethostbyname(gethostname())
+serverHost = 'localhost'
 serverPort = int(sys.argv[1])
 serverAddress = (serverHost, serverPort)
 numAttempts = int(sys.argv[2])
@@ -40,23 +41,33 @@ numAttempts = int(sys.argv[2])
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(serverAddress)
 
-# read credentials file to create a dicionary for user information
-userInfo = {} # make this a list of dicts instead
+userInfo = {}
 
+"""
+    Read credentials file to create a dicionary for user information. Example structure:
+    {"hans": [
+        'password': falcon*solo,
+        'status': 1,
+        'blocked_until': [insert datetime object]
+        'room_IDs': [1, 2, 5]
+    ]}
+"""
 with open('credentials.txt', 'r') as file:
     for credential in file.readlines():
         details = {}
         details['password'] = credential.split()[1]
-        details['status'] = INACTIVE_USER
+        details['status'] = INACTIVE_USER # constant integer
         details['blocked_until'] = datetime.now()
+        details['room_IDs'] = [] # list of ints corresponding to room IDs
         userInfo[credential.split()[0]] = details
 
 activeUserCnt = 0
 messageCnt = 1
 
-# key is roomd id and value is dict similar to userInfo which will have more deets
+# key is room id and value is dict similar to userInfo which will have more deets
 # the inner dict contains messageNum (like messageCnt but for each room) and list containing members
 messageRooms = {}
+roomCnt = 1
 
 # TODO: implement parameters for UDP stuff (client IP addr and port no.)
 """
@@ -80,6 +91,7 @@ class ClientThread(Thread):
 
     def run(self):
         global attemptCnt, userInfo, numAttempts, activeUserCnt, clientUDPport, messageCnt
+        global messageRooms, roomCnt
         clientUDPport = self.clientSocket.recv(1024).decode()
         attemptCnt = 0
         username = ''
@@ -89,7 +101,7 @@ class ClientThread(Thread):
                 message, userInfo, attemptCnt = res
             elif len(res) == 5:
                 message, userInfo, attemptCnt, username, activeUserCnt = res
-            print(f"MESSAGE IS {message}") #FIXME: REMOVE-------------------------------------------------
+            # print(f"MESSAGE IS {message}") #FIXME: REMOVE-------------------------------------------------
 
             # retry authentication until user is blocked
             self.clientSocket.send(str.encode(message + '\0'))
@@ -100,11 +112,11 @@ class ClientThread(Thread):
                 break
 
             while userInfo[username]['status'] == ACTIVE_USER:
-                print("[send] command request") #FIXME: REMOVE---------------------------------------------
+                # print("[send] command request") #FIXME: REMOVE---------------------------------------------
                 self.clientSocket.send(str.encode(COMMAND_INSTRUCTIONS + '\0'))
                 received = self.clientSocket.recv(1024).decode()
-                print("[recv] command response") #FIXME: REMOVE--------------------------------------------
-                print(received)
+                # print("[recv] command response") #FIXME: REMOVE--------------------------------------------
+                # print(received)
 
                 # KeyboardInterrupt
                 if received == '':
@@ -120,8 +132,9 @@ class ClientThread(Thread):
                 if len(received) == 1:
                     command = received
                 else:
-                    receivedList = received.split()
-                    command = receivedList[0]
+                    arguments = received.split()
+                    command = arguments[0]
+                    arguments.pop(0)
 
                 if command == 'OUT':
                     activeUserCnt = logUserOut(username, userInfo)
@@ -134,13 +147,13 @@ class ClientThread(Thread):
                     sleep(0.5) # pause program so client can receive msg before socket is closed
                     self.clientAlive = False
                     break
-                elif command == 'BCM':
-                    i = 1
+                elif command == 'BCM': # TODO: retest since receivedList changed to arguments
+                    i = 0
                     message = ""
-                    while i < len(receivedList):
-                        message += receivedList[i] + " "
+                    while i < len(arguments):
+                        message += arguments[i] + " "
                         i += 1
-                    message = message[:-1]
+                    message = message[:-1] # remove the last space
                     timestamp = datetime.now()
                     timestamp = timestamp.strftime("%-d %b %Y %H:%M:%S")
 
@@ -154,14 +167,30 @@ class ClientThread(Thread):
                     self.clientSocket.send(str.encode(confirmationMessage + '\0'))
                     continue
                 elif command == 'ATU':
-                    print("print active users")
-                    users = retrieveActiveUsers(username)
-                    self.clientSocket.send(str.encode(users + '\0'))
+                    print(f"{username} issued ATU command")
+                    activeUsersMessageList = retrieveActiveUsers(username)
+                    print(f"Return messages:\n{activeUsersMessageList}")
+                    self.clientSocket.send(str.encode(activeUsersMessageList + '\0'))
                     continue
                 elif command == 'SRB': # create SR_ID_messagelog.txt for each room (SR_ID = room id)
-                    print("broadcast message to separate room")
+                    print(f"{username} issued SRB command")
+                    invalidUser, errorMessage = checkValidUsernames(username, arguments, userInfo)
+                    if invalidUser == '':
+                        roomExists, roomID = isExistingRoom(username, arguments, messageRooms, userInfo)
+                        if roomExists:
+                            message = f"a separate room (ID: {roomID}) already created for these users\0"
+                            print(f"Return message:\n{message}")
+                            self.clientSocket.send(str.encode(message))
+                        else:
+                            print("make room")
+                            message = createRoom(username, arguments, messageRooms, userInfo, roomCnt)
+                            self.clientSocket.send(str.encode(message))
+                    else:
+                        print(f"Return message:\n{errorMessage}")
+                        self.clientSocket.send(str.encode(errorMessage + invalidUser + '\0'))
+                    continue
                 elif command == 'SRM':
-                    print("make separate room")
+                    print("broadcast message to separate room")
                 elif command == 'RDM':
                     print("read message")
                 elif command == 'UPD':
@@ -174,19 +203,19 @@ class ClientThread(Thread):
     returns (constant string, userInfo dict, attempt count, username and active user count) 
     on successs.
 """
-def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
-    print("[send] username request") #FIXME: REMOVE-------------------------------------------------------
+def authenticate(self, userInfo: dict, attemptCnt: int, numAttempts: int, activeUserCnt: int) -> tuple:
+    # print("[send] username request") #FIXME: REMOVE-------------------------------------------------------
     self.clientSocket.send(str.encode(USERNAME_REQUEST + '\0'))
     username = self.clientSocket.recv(1024).decode()
-    print("[recv] username response") #FIXME: REMOVE------------------------------------------------------
+    # print("[recv] username response") #FIXME: REMOVE------------------------------------------------------
     if username not in userInfo.keys() or username == "":
         print("[send] username error") #FIXME: REMOVE-----------------------------------------------------
         return USERNAME_ERROR_MESSAGE, userInfo, attemptCnt
 
-    print("[send] password request") #FIXME: REMOVE-----------------------------------------------------
+    # print("[send] password request") #FIXME: REMOVE-----------------------------------------------------
     self.clientSocket.send(str.encode(PASSWORD_REQUEST + '\0'))
     password = self.clientSocket.recv(1024).decode()
-    print("[recv] password response") #FIXME: REMOVE-----------------------------------------------------
+    # print("[recv] password response") #FIXME: REMOVE-----------------------------------------------------
 
     # unblock user after 10s
     if (userInfo[username]['status'] == BLOCKED_USER and 
@@ -226,7 +255,7 @@ def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
     Parameters: username and userInfo dict
     Returns integer (number of active users)
 """
-def logUserOut(username, userInfo):
+def logUserOut(username: str, userInfo: dict) -> int:
     userInfo[username]['status'] = INACTIVE_USER
     with open("userlog.txt", "r") as f:
         lines = f.readlines()
@@ -249,7 +278,7 @@ def logUserOut(username, userInfo):
     Parameters: message number, timestamp, username, message
     Returns the string that is appended
 """
-def logMessage(messageNumber, timestamp, username, message):
+def logMessage(messageNumber: int, timestamp, username: str, message: str) -> tuple:
     result = f"{messageNumber}; {timestamp}; {username}; {message}\n"
     with open("messagelog.txt", 'a') as file:
         file.write(result)
@@ -262,7 +291,7 @@ def logMessage(messageNumber, timestamp, username, message):
     Parameters: username
     Returns string of users, or the message "no other active user"
 """
-def retrieveActiveUsers(username):
+def retrieveActiveUsers(username: str) -> str:
     result = ""
     with open("userlog.txt", 'r') as file:
         lines = file.readlines()
@@ -272,8 +301,8 @@ def retrieveActiveUsers(username):
             newLine = line.replace(';', '')
             lineElements = newLine.split()
             
-            ATUmessage = f"{lineElements[5]}, active since {lineElements[1]} {lineElements[2]} "
-            ATUmessage += f"{lineElements[3]} {lineElements[4]} on {lineElements[6]}:{lineElements[7]}.\n"
+            ATUmessage = f"{lineElements[5]}, active since {lineElements[1]} {lineElements[2]} " \
+            + f"{lineElements[3]} {lineElements[4]} on {lineElements[6]}:{lineElements[7]}.\n"
             result += ATUmessage
     
     if result == "":
@@ -281,6 +310,70 @@ def retrieveActiveUsers(username):
     result = result[:-1] # remove the last '\n'
     return result
 
+
+"""
+    Checks if list of users exist, are active, and are not the user that created the group
+    Parameters: username of user and list of usernames to be added
+    Returns tuple of the invalid username and error message or None if no issues are detected
+"""
+def checkValidUsernames(username: str, userList: list, userDict: dict) -> tuple:
+    for user in userList:
+        if user not in userDict:
+            return user, SRB_NOT_EXISTENT_USER_MESSAGE
+        elif username == user:
+            return user, SRB_YOURSELF_USER_MESSAGE
+        elif userDict[user]['status'] != ACTIVE_USER:
+            return user, SRB_INACTIVE_USER_MESSAGE
+    return None, None
+
+
+"""
+    Check if user is already in a room with the list of usernames provided
+    Parameters: username, list of users, room dictionary, user dictionary
+    Returns boolean: true if room exists, false if not
+"""
+def isExistingRoom(username: str, users: list, rooms: dict, userDict: dict) -> bool:
+    roomIDs = userDict[username]['room_IDs']
+    if roomIDs == []:
+        return False
+    # check the rooms the user is part of and see if these rooms contain the other users already
+    for roomID in roomIDs:
+        # room exists if its size is equal to that of the user list + the user.
+        if len(rooms[roomID]) != (len(users) + 1):
+            continue
+        isMember = False
+
+        for user in users:
+            if user in rooms[roomID]:
+                print("user in this room")
+                isMember = True
+            else:
+                isMember = False
+                break
+        if isMember:
+            return True, roomID
+    return False
+
+
+"""
+    Create a new separate room
+    Parameters: username, list of users, message rooms dictionary, users dictionary
+    Returns tuple containing message and updated room count
+"""
+# key is room id and value is dict similar to userInfo which will have more deets
+# the inner dict contains messageNum (like messageCnt but for each room) and list containing members
+def createRoom(username: str, userList: list, messageRooms: dict, userInfo: dict, roomNum: int) -> tuple:
+    message = ""
+    # if not messageRooms: # there are no existing rooms
+    details = {}
+    details['message_num'] = 1
+    details['members'] = userList.append(username)
+    messageRooms[roomNum] = details
+    roomNum += 1
+    print('first room ever')
+    userInfo[username]['room_IDs'] = roomNum
+
+    return message, roomNum
 
 print(f"\n===== Server is running on {serverAddress[0]}:{serverAddress[1]} =====")
 print("===== Waiting for connection request from clients...=====")
