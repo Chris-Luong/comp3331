@@ -28,7 +28,7 @@ elif not sys.argv[2].isalnum() or int(sys.argv[2]) > 5 or int(sys.argv[2]) < 1:
     exit(0)
 
 # serverHost = gethostbyname(gethostname())
-serverHost = ''
+serverHost = gethostname()
 serverPort = int(sys.argv[1])
 serverAddress = (serverHost, serverPort)
 numAttempts = int(sys.argv[2])
@@ -519,6 +519,8 @@ def retrieveSRMessages(timestamp: str, userInfo: dict, username: str) -> str:
 
                 line = f"#{messageNum};{user}:{message} at {timeSent}"
                 result += line
+        if result == f"room-{room}\n":
+            result += RDM_NO_MSG + '\n'
     return result
 
 
@@ -540,7 +542,7 @@ def formatTime(timestamp: str) -> str:
 
 
 
-print(f"\n===== Server is running =====")# on {serverAddress[0]}:{serverAddress[1]}
+print(f"\n===== Server is running on {serverAddress[0]}:{serverAddress[1]} =====")
 print("===== Waiting for connection request from clients...=====")
 
 try:

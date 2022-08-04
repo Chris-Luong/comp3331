@@ -1,4 +1,5 @@
 import errno
+from time import sleep
 
 """
     Implements message receiving for non-blocking TCP connection
@@ -14,4 +15,5 @@ def recv_msg(sock):
         if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
             print(f"Client has encountered an error. Please restart the client.\n{e}")
             exit(1)
+        sleep(1)
         return None

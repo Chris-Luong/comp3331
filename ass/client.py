@@ -132,11 +132,12 @@ while True:
         justConnected = False
     # Listen to server socket and put messages into a queue (buffer)
     received = recv_msg(clientSocket)
-    if received is None:
+    if received is None and len(msgQueue) == 0:
         continue
-    for r in received:
-        if r != '':
-           msgQueue.append(r)
+    if received is not None:
+        for r in received:
+            if r != '':
+                msgQueue.append(r)
     try:
         recvMsg = msgQueue[0]
     except Exception as e:
@@ -158,7 +159,6 @@ while True:
             justTurnedActive = True
             msgQueue.pop(0)
             continue
-
     if justTurnedActive:
         username = getUsername()
         justTurnedActive = False
