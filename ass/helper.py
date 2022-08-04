@@ -12,6 +12,6 @@ def recv_msg(sock):
     except IOError as e:
         # EAGAIN and EWOULDBLOCK are errors for no incoming data, which can happen
         if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
-            print(e)
+            print(f"Client has encountered an error. Please restart the client.\n{e}")
             exit(1)
         return None

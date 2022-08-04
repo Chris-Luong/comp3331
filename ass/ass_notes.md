@@ -36,6 +36,7 @@
 # Assumptions
 
 - users all have different usernames
+- the creator of a separate room chat will also be displayed as a user in the room
 
 # Notes
 

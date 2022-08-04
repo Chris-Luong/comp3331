@@ -102,6 +102,14 @@ def getUsername():
         # go to 6th string for username
         return last_line.split()[5].strip(';')
 
+def processResponse(message):
+    if message.find("Broadcast message,") != -1 or message.find("active since") != -1\
+        or message.find(ATU_STATUS_ALONE) != -1 or message.find(SRB_INACTIVE_USER_MESSAGE) != -1 or\
+        message.find(SRB_NOT_EXISTENT_USER_MESSAGE) != -1 or message.find(SRB_YOURSELF_USER_MESSAGE) != -1\
+        or message.find("Separate chat room has been created") != -1 or message.find("already created") != -1:
+        print(message)
+        return True
+    return False
 
 # TODO: implement parameters for UDP stuff (client IP addr and port no.)
 while True:
@@ -147,16 +155,12 @@ while True:
         username = getUsername()
         justTurnedActive = False
 
-    if recvMsg.find("Broadcast message,") != -1:
-        print(recvMsg)
+    # Check for and print responses from server after input for commands
+    # print("recvMsg is ", recvMsg)
+    if processResponse(recvMsg):
         msgQueue.pop(0)
         continue
-    
-    if recvMsg.find("active since") != -1 or recvMsg == ATU_STATUS_ALONE:
-        print(recvMsg)
-        msgQueue.pop(0)
-        continue
-        
+
     while recvMsg == COMMAND_INSTRUCTIONS:
         userInput = input(recvMsg)
         inputList = userInput.split()
@@ -194,7 +198,7 @@ while True:
         print(recvMsg)
         clientSocket.close()
         exit(0)
-
+    # print("before final queue pop, recvMsg is ", recvMsg)
     msgQueue.pop(0)
 
 # close the socket

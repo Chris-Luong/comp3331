@@ -45,12 +45,13 @@ userInfo = {}
 
 """
     Read credentials file to create a dicionary for user information. Example structure:
-    {"hans": [
+    {"hans": {
         'password': falcon*solo,
         'status': 1,
         'blocked_until': [insert datetime object]
         'room_IDs': [1, 2, 5]
-    ]}
+        }
+    }
 """
 with open('credentials.txt', 'r') as file:
     for credential in file.readlines():
@@ -64,8 +65,14 @@ with open('credentials.txt', 'r') as file:
 activeUserCnt = 0
 messageCnt = 1
 
-# key is room id and value is dict similar to userInfo which will have more deets
-# the inner dict contains messageNum (like messageCnt but for each room) and list containing members
+"""
+    Similar to userInfo dictionary with the room ID as the key, example:
+    {"1": {
+        "message_num": 2
+        "members": [uno, dos]
+        }
+    }
+"""
 messageRooms = {}
 roomCnt = 1
 
@@ -175,18 +182,19 @@ class ClientThread(Thread):
                 elif command == 'SRB': # create SR_ID_messagelog.txt for each room (SR_ID = room id)
                     print(f"{username} issued SRB command")
                     invalidUser, errorMessage = checkValidUsernames(username, arguments, userInfo)
-                    if invalidUser == '':
+                    if invalidUser == None:
                         roomExists, roomID = isExistingRoom(username, arguments, messageRooms, userInfo)
                         if roomExists:
                             message = f"a separate room (ID: {roomID}) already created for these users\0"
                             print(f"Return message:\n{message}")
                             self.clientSocket.send(str.encode(message))
                         else:
-                            print("make room")
-                            message = createRoom(username, arguments, messageRooms, userInfo, roomCnt)
+                            message, roomCnt, messageRooms, userInfo = \
+                                createRoom(username, arguments, messageRooms, userInfo, roomCnt)
+                            print(message)
                             self.clientSocket.send(str.encode(message))
                     else:
-                        print(f"Return message:\n{errorMessage}")
+                        print(f"Return message:\n{errorMessage}{invalidUser}")
                         self.clientSocket.send(str.encode(errorMessage + invalidUser + '\0'))
                     continue
                 elif command == 'SRM':
@@ -332,19 +340,27 @@ def checkValidUsernames(username: str, userList: list, userDict: dict) -> tuple:
     Parameters: username, list of users, room dictionary, user dictionary
     Returns boolean: true if room exists, false if not
 """
-def isExistingRoom(username: str, users: list, rooms: dict, userDict: dict) -> bool:
+def isExistingRoom(username: str, users: list, rooms: dict, userDict: dict) -> tuple:
+    users.append(username)
     roomIDs = userDict[username]['room_IDs']
+    print(roomIDs)
     if roomIDs == []:
-        return False
+        return False, None
     # check the rooms the user is part of and see if these rooms contain the other users already
     for roomID in roomIDs:
         # room exists if its size is equal to that of the user list + the user.
-        if len(rooms[roomID]) != (len(users) + 1):
+        if len(rooms[roomID]['members']) != (len(users)):
+            print(len(rooms[roomID]['members']))
+            print("prev is len room ID, room ID is ", roomID)
+            print("")
+            print(len(users))
             continue
         isMember = False
-
+        print(f"users is {users} and room is {rooms[roomID]}")
         for user in users:
-            if user in rooms[roomID]:
+            print("user is ",user)
+            print("users is ",users)
+            if user in rooms[roomID]['members']:
                 print("user in this room")
                 isMember = True
             else:
@@ -352,7 +368,7 @@ def isExistingRoom(username: str, users: list, rooms: dict, userDict: dict) -> b
                 break
         if isMember:
             return True, roomID
-    return False
+    return False, None
 
 
 """
@@ -364,18 +380,30 @@ def isExistingRoom(username: str, users: list, rooms: dict, userDict: dict) -> b
 # the inner dict contains messageNum (like messageCnt but for each room) and list containing members
 def createRoom(username: str, userList: list, messageRooms: dict, userInfo: dict, roomNum: int) -> tuple:
     message = ""
-    # if not messageRooms: # there are no existing rooms
     details = {}
+
     details['message_num'] = 1
-    details['members'] = userList.append(username)
+    print(userList)
+    details['members'] = userList
+    print("user list after appending username is ",userList)
     messageRooms[roomNum] = details
+    # update userInfo dict with room IDs
+    userInfo[username]['room_IDs'].append(roomNum)
+    for user in userList:
+        userInfo[user]['room_IDs'].append(roomNum)
+
+    users = ', '.join(str(user) for user in userList)
+    message = f"Separate chat room has been created, room ID: {roomNum}, "\
+        + f"users in this room: {users}\0"
+
+    with open(f"SR_{roomNum}_messagelog.txt", 'w') as file:
+        file.write("")
+
     roomNum += 1
-    print('first room ever')
-    userInfo[username]['room_IDs'] = roomNum
+    return message, roomNum, messageRooms, userInfo
 
-    return message, roomNum
 
-print(f"\n===== Server is running on {serverAddress[0]}:{serverAddress[1]} =====")
+print(f"\n===== Server is running =====")# on {serverAddress[0]}:{serverAddress[1]}
 print("===== Waiting for connection request from clients...=====")
 
 try:
@@ -386,10 +414,11 @@ try:
         clientThread.start()
 finally:
     # delete created files for clean start on next server run
-    if os.path.exists("userlog.txt"):
-        os.remove("userlog.txt")
-    if os.path.exists("messagelog.txt"):
-        os.remove("messagelog.txt")
-    # for id in SR_ID list or whatever:
-    # remove f"{id}_messagelog.txt"
+    files = os.listdir()
+    for file in files:
+        if file == "credentials.txt":
+            continue
+        elif file.endswith(".txt"):
+            os.remove(file)
+
     serverSocket.close()
