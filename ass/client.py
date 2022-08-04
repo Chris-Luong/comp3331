@@ -50,10 +50,10 @@ msgQueue = []
 
 """
     Function for logging the user in
-    Parameter is the message received from server
+    Parameter is the string message received from server
     Return type is constant integer
 """
-def loginUser(recvMsg):
+def loginUser(recvMsg: str) -> int:
     while recvMsg == 'Username: ':
         username = input(recvMsg)
         if username == '':
@@ -90,7 +90,7 @@ def loginUser(recvMsg):
     e.g. 1; 31 Jul 2022 17:52:15; hans
     Returns string (username)
 """
-def getUsername():
+def getUsername() -> str:
     with open("userlog.txt", "rb") as file:
         try: # go to last line
             file.seek(-2, os.SEEK_END)
@@ -102,12 +102,19 @@ def getUsername():
         # go to 6th string for username
         return last_line.split()[5].strip(';')
 
-def processResponse(message):
+"""
+    See if response is expected from server and return True/False
+    Parameter: message
+    Returns boolean
+"""
+def processResponse(message: str) -> bool:
     if message.find("Broadcast message,") != -1 or message.find("active since") != -1\
         or message.find(ATU_STATUS_ALONE) != -1 or message.find(SRB_INACTIVE_USER_MESSAGE) != -1 or\
         message.find(SRB_NOT_EXISTENT_USER_MESSAGE) != -1 or message.find(SRB_YOURSELF_USER_MESSAGE) != -1\
         or message.find("Separate chat room has been created") != -1 or message.find("already created") != -1\
-        or message.find("Issued separate room message") != -1:
+        or message.find(SRM_INVALID_ROOM) != -1 or message.find(SRM_NON_EXISTENT_ROOM) != -1 \
+        or message.find("Issued separate room message") != -1 or message.find("Messages in") != -1\
+        or message.find(RDM_NO_MSG) != -1 or message.find("#") != -1 or message.find("room-") != -1:
         print(message)
         return True
     return False

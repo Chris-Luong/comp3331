@@ -222,7 +222,27 @@ class ClientThread(Thread):
                     self.clientSocket.send(str.encode(confirmationMessage + '\0'))
                     continue
                 elif command == 'RDM':
-                    print("read message")
+                    print(f"RDM command issued by {username}")
+                    messageType = arguments[0]
+                    timestamp = f"{arguments[1]} {arguments[2]} {arguments[3]} {arguments[4]}"
+
+                    if messageType == 'b':
+                        print()
+                        messageList = retrieveMessages(timestamp)
+                    elif messageType == 's':
+                        messageList = retrieveSRMessages(timestamp, userInfo, username)
+                    else:
+                        print(messageType)
+                        print("wrong message type u nong")
+                        continue
+
+                    if messageList == '':
+                        print(RDM_NO_MSG)
+                        self.clientSocket.send(str.encode(RDM_NO_MSG + '\0'))
+                        continue
+                    print(f"Return messages:\n{messageList}")
+                    self.clientSocket.send(str.encode(messageList + '\0'))
+                    continue
                 elif command == 'UPD':
                     print("nope")
                     self.clientSocket.send(str.encode("nope\0"))
@@ -411,6 +431,9 @@ def createRoom(username: str, userList: list, messageRooms: dict, userInfo: dict
     # update userInfo dict with room IDs
     userInfo[username]['room_IDs'].append(roomNum)
     for user in userList:
+        print(user)
+        if user == username:
+            continue
         userInfo[user]['room_IDs'].append(roomNum)
 
     users = ', '.join(str(user) for user in userList)
@@ -435,6 +458,91 @@ def checkValidRoom(roomID: int, username: str, messageRooms: dict) -> str:
     if username not in messageRooms[roomID]['members']:
         return SRM_INVALID_ROOM
     return None
+
+
+"""
+    Retrieves messages from broadcast/separate room service
+    Parameters: string for timestamp
+    Returns list of messages
+"""
+def retrieveMessages(timestamp: str) -> str:
+    timestamp = formatTime(timestamp)
+    fromTime = datetime.strptime(timestamp, "%d %b %Y %H:%M:%S")
+    result = ''
+
+    try:
+        with open("messagelog.txt", 'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                line = line.split(';')
+                line[1] = line[1][1:]
+                line[1] = formatTime(line[1])
+                time = datetime.strptime(line[1], "%d %b %Y %H:%M:%S")
+                if time < fromTime:
+                    continue
+                messageNum = line[0]
+                user = line[2]
+                message = line[3].strip('\n')
+                timeSent = line[1] + '\n'
+
+                line = f"#{messageNum};{user}:{message} at {timeSent}"
+                result += line
+    except:
+        return RDM_NO_MSG
+    return result
+
+"""
+    Retrieves messages from broadcast/separate room service
+    Parameters: string for timestamp, user info dictionary, username
+    Returns list of messages
+"""
+def retrieveSRMessages(timestamp: str, userInfo: dict, username: str) -> str:
+    timestamp = formatTime(timestamp)
+    fromTime = datetime.strptime(timestamp, "%d %b %Y %H:%M:%S")
+    result = ''
+    roomIDs = userInfo[username]['room_IDs']
+
+    currentRoom = -1
+    for room in roomIDs:
+        if currentRoom != room:
+            result += f"room-{room}:\n"
+            currentRoom = room
+        with open(f"SR_{room}_messagelog.txt", 'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                line = line.split(';')
+                line[1] = line[1][1:]
+                line[1] = formatTime(line[1])
+                time = datetime.strptime(line[1], "%d %b %Y %H:%M:%S")
+                if time < fromTime:
+                    continue
+                messageNum = line[0]
+                user = line[2]
+                message = line[3].strip('\n')
+                timeSent = line[1] + '\n'
+
+                line = f"#{messageNum};{user}:{message} at {timeSent}"
+                result += line
+    return result
+
+
+# format 0 to date in timestamp
+def formatTime(timestamp: str) -> str:
+    timeString = timestamp.split()
+
+    date = int(timeString[0])
+
+    if date < 10:
+        newDate = '0' + str(date)
+    timeString = timeString[1:]
+
+    timeString.insert(0, newDate)
+    newTime = ' '.join(timeString)
+    return newTime
+
+
+
+
 
 print(f"\n===== Server is running =====")# on {serverAddress[0]}:{serverAddress[1]}
 print("===== Waiting for connection request from clients...=====")

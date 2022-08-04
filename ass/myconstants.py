@@ -22,6 +22,7 @@ SRB_INACTIVE_USER_MESSAGE = "Error:: this user is offline: "
 SRB_YOURSELF_USER_MESSAGE = "Error:: you cannot create a room with yourself "
 SRM_NON_EXISTENT_ROOM = "The separate room does not exist"
 SRM_INVALID_ROOM = "You are not in this separate room chat"
+RDM_NO_MSG = "no new message"
 
 # Mesages for commands
 ATU_STATUS_ALONE = "No other active user"
