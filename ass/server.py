@@ -54,6 +54,10 @@ with open('credentials.txt', 'r') as file:
 activeUserCnt = 0
 messageCnt = 1
 
+# key is roomd id and value is dict similar to userInfo which will have more deets
+# the inner dict contains messageNum (like messageCnt but for each room) and list containing members
+messageRooms = {}
+
 # TODO: implement parameters for UDP stuff (client IP addr and port no.)
 """
     Define multi-thread class for client
@@ -137,15 +141,22 @@ class ClientThread(Thread):
                         message += receivedList[i] + " "
                         i += 1
                     message = message[:-1]
-                    loggedMessage, messageCnt = logMessage(messageCnt, datetime.now(), username, message)
+                    timestamp = datetime.now()
+
+                    print(f"{username} broadcasted BCM #{messageCnt} \"{message}\" at {timestamp}.")
+
+                    loggedMessage, messageCnt = logMessage(messageCnt, timestamp, username, message)
                     loggedMessage = loggedMessage.split(';')
                     confirmationMessage = \
                     f"Broadcast message, #{loggedMessage[0]} broadcast at {loggedMessage[1]}."
+
                     self.clientSocket.send(str.encode(confirmationMessage + "\0"))
                     continue
                 elif command == 'ATU':
                     print("print active users")
-                elif command == 'SRB':
+                    users = retrieveActiveUsers(username)
+                    continue
+                elif command == 'SRB': # create SR_ID_messagelog.txt for each room (SR_ID = room id)
                     print("broadcast message to separate room")
                 elif command == 'SRM':
                     print("make separate room")
@@ -207,6 +218,12 @@ def authenticate(self, userInfo, attemptCnt, numAttempts, activeUserCnt):
     print(LOGGED_IN_USER_MESSAGE)
     return S_WELCOME_MESSAGE, userInfo, attemptCnt, username, activeUserCnt
 
+
+"""
+    Logs out user and removes them from userlog.txt
+    Parameters: username and userInfo dict
+    Returns integer (number of active users)
+"""
 def logUserOut(username, userInfo):
     userInfo[username]['status'] = INACTIVE_USER
     with open("userlog.txt", "r") as f:
@@ -223,6 +240,7 @@ def logUserOut(username, userInfo):
                 f.write(newLine)
         return i
 
+
 """
     Creates a message log according to the specified format and appends to messagelog.txt
     Parameters: message number, timestamp, username, message
@@ -235,6 +253,22 @@ def logMessage(messageNumber, timestamp, username, message):
         file.write(result)
     messageNumber += 1
     return result, messageNumber
+
+
+"""
+    Retrieves all active users from userlog.txt excluding the user that requested
+    Parameters: username
+    Returns string of users
+"""
+def retrieveActiveUsers(username):
+    result = ""
+    with open("messagelog.txt", 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            if line.split()[5].strip(';') != username:
+                result += line
+    return result
+
 
 print(f"\n===== Server is running on {serverAddress[0]}:{serverAddress[1]} =====")
 print("===== Waiting for connection request from clients...=====")
@@ -251,4 +285,6 @@ finally:
         os.remove("userlog.txt")
     if os.path.exists("messagelog.txt"):
         os.remove("messagelog.txt")
+    # for id in SR_ID list or whatever:
+    # remove f"{id}_messagelog.txt"
     serverSocket.close()

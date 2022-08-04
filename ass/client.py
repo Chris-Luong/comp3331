@@ -147,9 +147,12 @@ while True:
         username = getUsername()
         justTurnedActive = False
 
-    # print("before finding message if statement: ",recvMsg)
-    # print("msgQueue at this point is ", msgQueue)
     if recvMsg.find("Broadcast message,") != -1:
+        print(recvMsg)
+        msgQueue.pop(0)
+        continue
+    
+    if recvMsg.find("active since") != -1:
         print(recvMsg)
         msgQueue.pop(0)
         continue
@@ -164,9 +167,25 @@ while True:
             if len(inputList) < 2:
                 print("Usage: BCM [message]")
                 continue
-            # print(inputList)
+        elif inputList[0] == 'ATU':
+                break
+        elif inputList[0] == 'SRB':
+            if len(inputList) < 2:
+                print("Usage: SRB [username1] [username2] ... A minimum of 1 username is required")
+                continue
+        elif inputList[0] == 'SRM':
+            if len(inputList) < 3:
+                print("Usage: SRM [roomID] [message] ...")
+                continue
+        elif inputList[0] == 'RDM':
+            if len(inputList) < 3:
+                print("Usage: RDM [messageType] [timestamp] ...")
+                continue
+        
         clientSocket.send(str.encode(userInput))
-        break # need to get confirmation message before receiving next command
+        
+        # need to get a message before receiving next command
+        break
     if recvMsg == (f"Bye, {username}!"): # OUT
         print(recvMsg)
         clientSocket.close()
