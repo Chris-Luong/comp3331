@@ -5,10 +5,6 @@
     Christopher Luong (z5309196)
 """
 
-"""
-TODO:
-"""
-
 import os
 from datetime import datetime, timedelta
 from socket import *
@@ -32,7 +28,7 @@ elif not sys.argv[2].isalnum() or int(sys.argv[2]) > 5 or int(sys.argv[2]) < 1:
     exit(0)
 
 # serverHost = gethostbyname(gethostname())
-serverHost = 'localhost'
+serverHost = ''
 serverPort = int(sys.argv[1])
 serverAddress = (serverHost, serverPort)
 numAttempts = int(sys.argv[2])

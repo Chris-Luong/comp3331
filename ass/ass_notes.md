@@ -18,7 +18,6 @@
 
 - attribute multithreading to WebCMS sample code
 - attribute reading last line in file to https://www.codingem.com/how-to-read-the-last-line-of-a-file-in-python/
-- implementation of '\0' versions of messages is inefficient
 - removerUser could be better by only replacing the sequence numbers after the removed user instead of rewriting the sequence numbers of every user.
 
 # Testing
